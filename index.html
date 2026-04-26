@@ -274,6 +274,7 @@
     <button class="tab-btn active" onclick="switchTab('tab-all')">All</button>
     <button class="tab-btn" onclick="switchTab('tab-dipole')">Dipole Trap</button>
     <button class="tab-btn" onclick="switchTab('tab-psd')">Trap Freq &amp; PSD</button>
+    <button class="tab-btn" onclick="switchTab('tab-temperature')">Temperature vs Pressure</button>
 </div>
 
 <!-- ==================== SHARED INPUTS (always visible) ==================== -->
@@ -446,6 +447,14 @@
             </div>
         </div>
 
+        <!-- SECTION C: Temperature vs Pressure -->
+        <div class="section-header" style="background: #f0fdf4; color: #15803d; border-left: 4px solid #16a34a; margin-top:10px;">🌡️ Particle Temperature vs. Pressure</div>
+        <div class="psd-plots-grid">
+            <div class="psd-plot-card" style="grid-column: 1 / -1;">
+                <div id="plot-temp-vs-pressure" style="height: 380px;"></div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -495,6 +504,25 @@
         <div class="psd-plots-grid">
             <div class="psd-plot-card"><div id="plot-trap-freq3" style="height:340px;"></div></div>
             <div class="psd-plot-card"><div id="plot-psd3"       style="height:340px;"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ────────── TAB: TEMPERATURE ────────── -->
+<div id="tab-temperature" class="tab-panel">
+    <div class="container" style="padding-top:4px;">
+        <div class="section-header" style="background: #f0fdf4; color: #15803d; border-left: 4px solid #16a34a;">🌡️ Particle Temperature vs. Pressure</div>
+        <div class="card results-card" style="max-width: none;">
+            <h2 style="color: #16a34a; border-bottom: 2px solid #16a34a;">Temperature Analysis</h2>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">
+                The graph shows equilibrium particle temperature as a function of residual gas pressure. 
+                Temperature equilibrium is determined by the balance between laser heating (absorption) and cooling via gas collisions and black-body radiation.
+            </p>
+        </div>
+        <div class="psd-plots-grid" style="grid-template-columns: 1fr;">
+            <div class="psd-plot-card" style="min-height: 450px;">
+                <div id="plot-temp-vs-pressure-tab" style="height: 400px;"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -702,6 +730,11 @@ function readInputs() {
     const P_sweep_min_mW = parseFloat(document.getElementById('p_sweep_min').value);
     const P_sweep_max_mW = parseFloat(document.getElementById('p_sweep_max').value);
 
+    // Calculate intensity
+    const w0_m = w0_um * 1e-6;
+    const P_m = P_mW * 1e-3;
+    const I_intensity = 2 * P_m / (Math.PI * w0_m * w0_m);
+
     return {
         a:   (d_nm/2)*1e-9,
         d:    d_nm*1e-9,
@@ -713,6 +746,7 @@ function readInputs() {
         P_gas_Pa: P_gas_mbar * 100.0,
         P_sweep_min: P_sweep_min_mW * 1e-3,
         P_sweep_max: P_sweep_max_mW * 1e-3,
+        I_intensity: I_intensity,
     };
 }
 
@@ -1154,6 +1188,179 @@ function updatePSDPlots(d, p, freqId, psdId) {
 }
 
 // =========================================================================
+// Temperature vs Pressure calculation
+// =========================================================================
+const TEMP_CONSTANTS = {
+    c: C_LIGHT,
+    h_bar: HBAR,
+    k_B: KB,
+    zeta_5: 1.04,
+    m_gas: 4e-26,
+    gamma: 1.4
+};
+
+function solveTemperatureCurve(p, materialProps, t_threshold = 2000) {
+    /**
+     * Solves equilibrium temperature for a range of pressures.
+     * materialProps: { mu, eps_prime, eps_bb_pp, alpha }
+     *   - mu: absorption coefficient in cm^-1
+     *   - eps_prime: real part of dielectric constant
+     *   - eps_bb_pp: imaginary part for black-body
+     *   - alpha: polarizability factor (~1 for most, 0.777 for silica)
+     */
+    
+    // Derive parameters
+    const k_laser = 2 * Math.PI / p.lam;
+    const V_particle = (4/3) * Math.PI * (p.a ** 3);
+    const T0 = p.T;
+    const I = p.I_intensity; // should be set in readInputs
+    
+    // Calculate heating power
+    function getHeatingPower(mu_cm_inv, eps_prime) {
+        const mu_m_inv = mu_cm_inv * 100.0;
+        const eps_double_prime_laser = (p.lam * mu_m_inv) / (4 * Math.PI);
+        const Im_factor = (3 * eps_double_prime_laser) / 
+                         ((eps_prime + 2)**2 + eps_double_prime_laser**2);
+        return I * k_laser * V_particle * Im_factor;
+    }
+    
+    function getCoolingCoefficients(alpha_cool, eps_prime, eps_bb_pp) {
+        // Gas cooling
+        const v_bar = Math.sqrt((8 * KB * T0) / (Math.PI * TEMP_CONSTANTS.m_gas));
+        const gamma_factor = (TEMP_CONSTANTS.gamma + 1) / (TEMP_CONSTANTS.gamma - 1);
+        const C_gas = (alpha_cool / 2.0) * Math.PI * (p.a ** 2) * v_bar * gamma_factor;
+        
+        // Black-body cooling
+        const Im_bb = (3 * eps_bb_pp) / ((eps_prime + 2)**2 + eps_bb_pp**2);
+        const prefactor = (72 * TEMP_CONSTANTS.zeta_5 * V_particle) / 
+                         (Math.PI**2 * TEMP_CONSTANTS.c**3 * TEMP_CONSTANTS.h_bar**4);
+        const C_bb = prefactor * Im_bb * (KB ** 5);
+        
+        return { C_gas, C_bb };
+    }
+    
+    const P_abs = getHeatingPower(materialProps.mu, materialProps.eps_prime);
+    const { C_gas, C_bb } = getCoolingCoefficients(materialProps.alpha, materialProps.eps_prime, materialProps.eps_bb_pp);
+    
+    // Pressure range: 10^3 to 10^-6 mbar in log space
+    const N_pressures = 500;
+    const pressures = [];
+    for (let i = 0; i < N_pressures; i++) {
+        pressures.push(Math.pow(10, 3 - 9*i/(N_pressures-1)));
+    }
+    
+    const p_results = [];
+    const t_results = [];
+    let current_guess = T0;
+    
+    for (let p_mbar of pressures) {
+        const p_pascal = p_mbar * 100.0;
+        
+        // Energy balance: P_abs - C_gas*P*(T/T0 - 1) - C_bb*(T^5 - T0^5) = 0
+        function energyBalance(T_val) {
+            const term_gas = C_gas * p_pascal * (T_val / T0 - 1);
+            const term_bb = C_bb * (Math.pow(T_val, 5) - Math.pow(T0, 5));
+            return P_abs - term_gas - term_bb;
+        }
+        
+        // Simple Newton-Raphson solver
+        let T_sol = current_guess;
+        for (let iter = 0; iter < 20; iter++) {
+            const f = energyBalance(T_sol);
+            if (Math.abs(f) < 1e-6 * P_abs) break;
+            
+            const dT = 0.1;
+            const df = (energyBalance(T_sol + dT) - f) / dT;
+            if (Math.abs(df) < 1e-15) break;
+            
+            T_sol = T_sol - f / df;
+            T_sol = Math.max(T0, Math.min(T_sol, t_threshold));
+        }
+        
+        if (T_sol > t_threshold) break;
+        
+        p_results.push(p_mbar);
+        t_results.push(T_sol);
+        current_guess = T_sol;
+    }
+    
+    return { p_results, t_results };
+}
+
+function updateTemperaturePlot(p, plotId) {
+    if (!p.a || !p.n_r || !p.w0 || !p.lam || !p.P) return;
+    
+    // Calculate intensity if not already done
+    if (!p.I_intensity) {
+        p.I_intensity = 2 * p.P / (Math.PI * p.w0 * p.w0);
+    }
+    
+    // Define material grades (from script provided)
+    const materialGrades = [
+        { label: "Commercial", mu: 5.8,    eps_prime: 5.8, eps_bb_pp: 0.020, alpha: 1.0,   style: "solid", color: '#1f2937' },
+        { label: "Standard",   mu: 0.03,   eps_prime: 5.8, eps_bb_pp: 0.020, alpha: 1.0,   style: "solid", color: '#374151' },
+        { label: "Low",        mu: 0.003,  eps_prime: 5.8, eps_bb_pp: 0.020, alpha: 1.0,   style: "dash",  color: '#6b7280' },
+        { label: "Electronic", mu: 4.5e-5, eps_prime: 5.8, eps_bb_pp: 0.020, alpha: 1.0,   style: "dot",   color: '#9ca3af' },
+        { label: "Silica",     mu: 0.11,   eps_prime: 2.0, eps_bb_pp: 0.543, alpha: 0.777, style: "solid", color: '#dc2626' },
+    ];
+    
+    const traces = [];
+    for (let material of materialGrades) {
+        try {
+            const result = solveTemperatureCurve(p, material, 2000);
+            if (result.p_results.length > 0) {
+                const trace = {
+                    x: result.p_results,
+                    y: result.t_results,
+                    name: `${material.label} (μ = ${material.mu.toExponential(1)} cm⁻¹)`,
+                    mode: 'lines',
+                    line: {
+                        color: material.color,
+                        width: 2.2,
+                        dash: material.style === 'solid' ? 'solid' : (material.style === 'dash' ? 'dash' : 'dot')
+                    }
+                };
+                traces.push(trace);
+            }
+        } catch (e) {
+            console.warn('Temperature calc failed for ' + material.label, e);
+        }
+    }
+    
+    // Add vertical line at current gas pressure
+    const p_gas_mbar = p.P_gas_Pa / 100.0;
+    const T_max = 1600;
+    const T_min = p.T * 0.9;
+    const vline = {
+        x: [p_gas_mbar, p_gas_mbar],
+        y: [T_min, T_max],
+        mode: 'lines',
+        showlegend: false,
+        line: { color: '#7c3aed', width: 2, dash: 'dash' },
+        hovertemplate: `<b>Selected Pressure</b><br>P = ${p_gas_mbar.toExponential(2)} mbar<extra></extra>`
+    };
+    traces.push(vline);
+    
+    // Layout
+    const laserIntensity = p.I_intensity / 1e9;
+    const particleDiameter = 2 * p.a * 1e9;
+    const layout = {
+        ...baseLayout,
+        title: {
+            text: `Nanoparticle Temperature vs. Pressure<br><sub>Laser Intensity: ${laserIntensity.toFixed(0)} GW/m², Particle Diameter: ${particleDiameter.toFixed(0)} nm</sub>`,
+            font: { size: 14 }
+        },
+        xaxis: { ...baseLayout.xaxis, type: 'log', title: 'Pressure [mbar]', range: [-5, 2] },
+        yaxis: { ...baseLayout.yaxis, title: 'Temperature [K]', type: 'linear', exponentformat: 'none', range: [200, 1000] },
+        legend: { x:0.98, y:0.98, xanchor:'right', yanchor:'top', bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#ddd', borderwidth:1, font:{size:10} },
+        hovermode: 'closest'
+    };
+    
+    plotOrReact(plotId, traces, layout, plotCfg);
+}
+
+
+// =========================================================================
 // Main calculate
 // =========================================================================
 function calculate() {
@@ -1190,6 +1397,14 @@ function calculate() {
     updatePSDResults(psd, p, 'psd-results-grid3');
     updatePSDPlots(psd, p, 'plot-trap-freq',  'plot-psd');
     updatePSDPlots(psd, p, 'plot-trap-freq3', 'plot-psd3');
+
+    // ── Temperature calc ──
+    try {
+        updateTemperaturePlot(p, 'plot-temp-vs-pressure');
+        updateTemperaturePlot(p, 'plot-temp-vs-pressure-tab');
+    } catch(e) {
+        console.error('Temperature plot error:', e);
+    }
 }
 
 // =========================================================================
@@ -1199,7 +1414,8 @@ function resizeAll() {
     ['plot-axial-force','plot-radial-force','plot-3d-potential',
      'plot-axial-force2','plot-radial-force2','plot-3d-potential2',
      'plot-beam-profile','plot-beam-profile2',
-     'plot-trap-freq','plot-psd','plot-trap-freq3','plot-psd3'
+     'plot-trap-freq','plot-psd','plot-trap-freq3','plot-psd3',
+     'plot-temp-vs-pressure','plot-temp-vs-pressure-tab'
     ].forEach(id => { try { Plotly.Plots.resize(id); } catch(e){} });
 }
 
