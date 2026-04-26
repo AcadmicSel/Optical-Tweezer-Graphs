@@ -346,19 +346,6 @@
                 <input type="number" id="gas_pressure" value="5" min="1e-10" max="1000" step="1" oninput="calculate()">
             </div>
         </div>
-
-        <!-- Power sweep range for freq plot -->
-        <div class="card">
-            <h2>Freq Plot Range</h2>
-            <div class="field">
-                <label>P<sub>min</sub> <span class="unit">[mW]</span></label>
-                <input type="number" id="p_sweep_min" value="5" min="0.1" max="1000" step="1" oninput="calculate()">
-            </div>
-            <div class="field">
-                <label>P<sub>max</sub> <span class="unit">[mW]</span></label>
-                <input type="number" id="p_sweep_max" value="200" min="1" max="50000" step="10" oninput="calculate()">
-            </div>
-        </div>
     </div>
 </div>
 
@@ -440,9 +427,11 @@
         <!-- PSD plots -->
         <div class="psd-plots-grid">
             <div class="psd-plot-card">
+                <div class="eq-box" id="eq-trap-freq"></div>
                 <div id="plot-trap-freq"></div>
             </div>
             <div class="psd-plot-card">
+                <div class="eq-box" id="eq-psd"></div>
                 <div id="plot-psd"></div>
             </div>
         </div>
@@ -451,6 +440,7 @@
         <div class="section-header" style="background: #f0fdf4; color: #15803d; border-left: 4px solid #16a34a; margin-top:10px;">🌡️ Particle Temperature vs. Pressure</div>
         <div class="psd-plots-grid">
             <div class="psd-plot-card" style="grid-column: 1 / -1;">
+                <div class="eq-box" id="eq-temperature"></div>
                 <div id="plot-temp-vs-pressure" style="height: 380px;"></div>
             </div>
         </div>
@@ -502,8 +492,14 @@
             <div id="psd-results-grid3"></div>
         </div>
         <div class="psd-plots-grid">
-            <div class="psd-plot-card"><div id="plot-trap-freq3" style="height:340px;"></div></div>
-            <div class="psd-plot-card"><div id="plot-psd3"       style="height:340px;"></div></div>
+            <div class="psd-plot-card">
+                <div class="eq-box" id="eq-trap-freq3"></div>
+                <div id="plot-trap-freq3" style="height:340px;"></div>
+            </div>
+            <div class="psd-plot-card">
+                <div class="eq-box" id="eq-psd3"></div>
+                <div id="plot-psd3" style="height:340px;"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -521,6 +517,7 @@
         </div>
         <div class="psd-plots-grid" style="grid-template-columns: 1fr;">
             <div class="psd-plot-card" style="min-height: 450px;">
+                <div class="eq-box" id="eq-temperature-tab"></div>
                 <div id="plot-temp-vs-pressure-tab" style="height: 400px;"></div>
             </div>
         </div>
@@ -535,20 +532,39 @@
         <li><b>w₀</b> — Beam waist at focus (μm)</li>
         <li><b>λ</b> — Laser wavelength (nm)</li>
         <li><b>n</b> — Particle refractive index</li>
+        <li><b>n_i</b> — Imaginary refractive index</li>
         <li><b>a</b> — Particle radius (nm)</li>
+        <li><b>R</b> — Particle radius (m)</li>
         <li><b>ρ</b> — Particle density (kg/m³)</li>
+        <li><b>m</b>, <b>m_p</b> — Particle mass (kg)</li>
+        <li><b>m_g</b> — Gas molecule mass (kg)</li>
+        <li><b>T</b> — Particle temperature (K)</li>
+        <li><b>T₀</b> — Ambient temperature (K)</li>
+        <li><b>P_gas</b>, <b>P_g</b> — Residual gas pressure (Pa or mbar)</li>
         <li><b>U</b> — Dipole potential (J or k<sub>B</sub>T)</li>
         <li><b>F<sub>grad</sub></b> — Gradient force (N)</li>
         <li><b>F<sub>scat</sub></b> — Scattering force (N)</li>
         <li><b>z<sub>R</sub></b> — Rayleigh range (μm)</li>
         <li><b>α</b> — Polarizability (C·m²/V)</li>
+        <li><b>k_r</b>, <b>k_ax</b> — Radial and axial trap stiffness (N/m)</li>
+        <li><b>f_r</b>, <b>f_ax</b> — Radial and axial trap frequency (kHz)</li>
+        <li><b>ω</b>, <b>ω_r</b>, <b>ω_ax</b>, <b>ω_0</b> — Angular frequencies (rad/s)</li>
         <li><b>Γ</b> — Gas damping rate (rad/s)</li>
-        <li><b>f<sub>ax</sub></b> — Axial trap frequency (kHz)</li>
-        <li><b>f<sub>r</sub></b>  — Radial trap frequency (kHz)</li>
-        <li><b>S<sub>x</sub>(ω)</b> — Position PSD (m²/Hz)</li>
+        <li><b>v̄</b>, <b>v_t</b> — Mean gas thermal velocity (m/s)</li>
+        <li><b>S_x(ω)</b> — Position PSD (m²/Hz)</li>
         <li><b>FWHM</b> — Full width at half maximum of PSD peak</li>
+        <li><b>Q</b> — Quality factor (f/FWHM)</li>
+        <li><b>P_abs</b> — Absorbed/heating power (W)</li>
+        <li><b>C_gas</b> — Gas collision cooling coefficient</li>
+        <li><b>C_bb</b> — Black-body radiation cooling coefficient</li>
+        <li><b>c</b> — Speed of light (m/s)</li>
+        <li><b>ε₀</b> — Vacuum permittivity (F/m)</li>
+        <li><b>k_B</b> — Boltzmann constant (J/K)</li>
+        <li><b>ℏ</b> — Reduced Planck constant (J·s)</li>
+        <li><b>ζ₅</b> — Riemann zeta function ≈ 1.04</li>
     </ul>
 </div>
+
 
 <script>
 // =========================================================================
@@ -727,8 +743,9 @@ function readInputs() {
     const P_mW   = parseFloat(document.getElementById('power').value);
     const T_K    = parseFloat(document.getElementById('temperature').value);
     const P_gas_mbar = parseFloat(document.getElementById('gas_pressure').value);
-    const P_sweep_min_mW = parseFloat(document.getElementById('p_sweep_min').value);
-    const P_sweep_max_mW = parseFloat(document.getElementById('p_sweep_max').value);
+    // Constant frequency plot range
+    const P_sweep_min_mW = 5;    // mW
+    const P_sweep_max_mW = 200;  // mW
 
     // Calculate intensity
     const w0_m = w0_um * 1e-6;
@@ -1344,10 +1361,11 @@ function updateTemperaturePlot(p, plotId) {
     // Layout
     const laserIntensity = p.I_intensity / 1e9;
     const particleDiameter = 2 * p.a * 1e9;
+    const laserPower = p.P * 1000;  // Convert to mW
     const layout = {
         ...baseLayout,
         title: {
-            text: `Nanoparticle Temperature vs. Pressure<br><sub>Laser Intensity: ${laserIntensity.toFixed(0)} GW/m², Particle Diameter: ${particleDiameter.toFixed(0)} nm</sub>`,
+            text: `Nanoparticle Temperature vs. Pressure<br><sub>Laser Power: ${laserPower.toFixed(0)} mW, Intensity: ${laserIntensity.toFixed(0)} GW/m², Particle Diameter: ${particleDiameter.toFixed(0)} nm</sub>`,
             font: { size: 14 }
         },
         xaxis: { ...baseLayout.xaxis, type: 'log', title: 'Pressure [mbar]', range: [-5, 2] },
@@ -1435,7 +1453,29 @@ function renderEquations() {
         String.raw`U(r,y)=-\frac{4a^3(n^2-1)P\pi^2w_0^2}{c(n^2+2)D}\exp\!\left(-\frac{2\pi^2r^2w_0^2}{D}\right)\qquad \alpha=4\pi\varepsilon_0a^3\frac{n^2-1}{n^2+2}`,
         document.getElementById('eq-potential'), {displayMode:true,throwOnError:false}
     );
+    const trapFreqEq = String.raw`k_r = \frac{4\alpha P}{\pi c \varepsilon_0 w_0^4} \quad k_{ax} = \frac{2\alpha \lambda^2 P}{\pi^3 c \varepsilon_0 w_0^6} \quad f_r = \frac{1}{2\pi}\sqrt{\frac{k_r}{m}} \quad f_{ax} = \frac{1}{2\pi}\sqrt{\frac{k_{ax}}{m}}`;
+    const psdEq = String.raw`S_x(\omega) = \frac{2\Gamma k_B T}{\pi m [(\omega^2 - \omega_0^2)^2 + (\Gamma\omega)^2]} \quad \Gamma = \frac{4\pi m_g R^2 v_t P_g}{3 k_B T m_p}\left(1 + \frac{\pi}{8}\right)`;
+    const tempEq = String.raw`P_{\text{abs}} = C_{\text{gas}} \cdot P_{\text{gas}} \left(\frac{T}{T_0}-1\right) + C_{\text{bb}} \left(T^5 - T_0^5\right)`;
+    
+    ['eq-trap-freq', 'eq-trap-freq3'].forEach(id => {
+        if (document.getElementById(id)) {
+            katex.render(trapFreqEq, document.getElementById(id), {displayMode:true,throwOnError:false});
+        }
+    });
+    
+    ['eq-psd', 'eq-psd3'].forEach(id => {
+        if (document.getElementById(id)) {
+            katex.render(psdEq, document.getElementById(id), {displayMode:true,throwOnError:false});
+        }
+    });
+    
+    ['eq-temperature', 'eq-temperature-tab'].forEach(id => {
+        if (document.getElementById(id)) {
+            katex.render(tempEq, document.getElementById(id), {displayMode:true,throwOnError:false});
+        }
+    });
 }
+
 
 // =========================================================================
 // Init
