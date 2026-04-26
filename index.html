@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optical Tweezer — Combined Calculator</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #dce1e8;
+            --text: #1a2332;
+            --text2: #5a6a7a;
+            --accent: #2563eb;
+            --accent2: #1d4ed8;
+            --green: #16a34a;
+            --red: #dc2626;
+            --orange: #ea580c;
+            --purple: #7c3aed;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+        header {
+            background: linear-gradient(135deg, #1e3a5f, #2563eb);
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        header h1 { font-size: 1.45rem; font-weight: 700; }
+        header p  { font-size: 0.85rem; opacity: 0.85; }
+
+        /* ── Tabs ── */
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            background: #1e3a5f;
+            padding: 0 20px;
+        }
+        .tab-btn {
+            padding: 10px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: rgba(255,255,255,0.65);
+            font-size: 0.93rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            letter-spacing: 0.3px;
+        }
+        .tab-btn.active {
+            color: #fff;
+            border-bottom-color: #60a5fa;
+        }
+        .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.9); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Layout ── */
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 16px;
+            max-width: 1700px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .card h2 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 6px;
+        }
+        .card h2.purple { color: var(--purple); border-bottom-color: var(--purple); }
+
+        /* ── Shared inputs ── */
+        .shared-inputs-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .field { margin-bottom: 10px; }
+        .field label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: var(--text2);
+            margin-bottom: 3px;
+        }
+        .field label .unit { font-size: 0.75rem; color: #8899aa; }
+        .field input[type="number"], .field select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            color: var(--text);
+            outline: none;
+            transition: border 0.2s;
+        }
+        .field input:focus, .field select:focus { border-color: var(--accent); }
+        .field input[type="range"] {
+            width: 100%;
+            margin-top: 2px;
+            accent-color: var(--accent);
+        }
+        .power-row { display: flex; gap: 8px; align-items: center; }
+        .power-row input[type="number"] { width: 90px; flex-shrink: 0; }
+        .power-row input[type="range"]  { flex: 1; }
+
+        /* ── Results ── */
+        .results-card { padding: 14px 18px; }
+        .results-card h2 { margin-bottom: 8px; }
+        .results-section-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #8899aa;
+            margin: 10px 0 4px 0;
+            font-weight: 600;
+        }
+        .results-section-title:first-child { margin-top: 0; }
+        .results-line { display: flex; flex-wrap: wrap; gap: 6px 28px; }
+        .result-item {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 3px 0;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        .result-item .label { color: var(--text2); }
+        .result-item .sep   { color: #ccd; }
+        .result-item .value { font-weight: 600; font-family: 'Consolas','SF Mono',monospace; font-size: 0.85rem; }
+        .result-item .value.good { color: var(--green); }
+        .result-item .value.bad  { color: var(--red); }
+        .result-item .value.warn { color: var(--orange); }
+
+        .status-box {
+            margin-top: 8px; padding: 8px 12px; border-radius: 6px;
+            font-size: 0.82rem; font-weight: 500; display: inline-block;
+        }
+        .status-box.ok   { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .status-box.fail { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* ── Force / potential plots ── */
+        .plots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "axial radial" "potential potential";
+            gap: 12px;
+        }
+        .plot-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 8px 8px 8px;
+            min-height: 340px; overflow: hidden;
+        }
+        .plot-card.axial     { grid-area: axial; }
+        .plot-card.radial    { grid-area: radial; }
+        .plot-card.wide      { grid-area: potential; min-height: 450px; }
+        #plot-axial-force, #plot-radial-force { height: 280px; }
+        #plot-3d-potential  { height: 390px; }
+
+        /* ── PSD section plots ── */
+        .psd-plots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .psd-plot-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 8px 8px 8px;
+            min-height: 380px; overflow: hidden;
+        }
+        #plot-trap-freq { height: 340px; }
+        #plot-psd       { height: 340px; }
+
+        /* ── PSD results box ── */
+        .psd-results-row {
+            display: flex; flex-wrap: wrap; gap: 6px 28px;
+            padding: 10px 16px;
+        }
+
+        /* ── Optics section ── */
+        .optics-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .optics-info {
+            display: flex; flex-wrap: wrap; gap: 4px 18px;
+            margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+        }
+        .optics-info .oi { font-size: 0.8rem; color: var(--text2); }
+        .optics-info .oi b { color: var(--text); font-family: 'Consolas','SF Mono',monospace; }
+        .beam-toggle {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px; font-size: 0.82rem; color: var(--text2);
+        }
+        .beam-toggle input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+        /* ── Equation boxes ── */
+        .eq-box {
+            color: #4a5568; background: #f0f4f8; border: 1px solid #e2e8f0;
+            border-radius: 6px; padding: 6px 14px; margin-bottom: 6px;
+            line-height: 1.8; overflow-x: auto; text-align: center;
+        }
+
+        .tooltip-icon {
+            display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+            background: #e2e8f0; color: #64748b; font-size: 10px;
+            text-align: center; line-height: 14px; cursor: help;
+            font-weight: 700; margin-left: 4px;
+        }
+
+        /* ── Section header banner ── */
+        .section-header {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin-top: 4px;
+        }
+        .section-header.blue   { background: #eff6ff; color: #1d4ed8; border-left: 4px solid #2563eb; }
+        .section-header.purple { background: #f5f3ff; color: #5b21b6; border-left: 4px solid #7c3aed; }
+
+        @media (max-width: 1100px) {
+            .shared-inputs-grid { grid-template-columns: 1fr 1fr 1fr; }
+            .plots-grid { grid-template-columns: 1fr; grid-template-areas: "axial" "radial" "potential"; }
+            .psd-plots-grid { grid-template-columns: 1fr; }
+            .optics-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 700px) {
+            .shared-inputs-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Optical Tweezer — Combined Simulator</h1>
+        <p>Dipole Trap Calculator &amp; Position PSD — all outputs driven by the same shared parameters</p>
+    </div>
+</header>
+
+<!-- ==================== TAB BAR ==================== -->
+<div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('tab-all')">All</button>
+    <button class="tab-btn" onclick="switchTab('tab-dipole')">Dipole Trap</button>
+    <button class="tab-btn" onclick="switchTab('tab-psd')">Trap Freq &amp; PSD</button>
+</div>
+
+<!-- ==================== SHARED INPUTS (always visible) ==================== -->
+<div class="container" style="padding-bottom:6px;">
+    <div class="shared-inputs-grid">
+        <!-- Material preset -->
+        <div class="card">
+            <h2>Material</h2>
+            <div class="field">
+                <select id="preset" onchange="applyPreset()">
+                    <option value="silica">Silica (SiO₂)</option>
+                    <option value="diamond">Nano Diamond</option>
+                    <option value="polystyrene">Polystyrene</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Particle -->
+        <div class="card">
+            <h2>Particle</h2>
+            <div class="field">
+                <label>Diameter <span class="unit">[nm]</span></label>
+                <input type="number" id="diameter" value="150" min="1" max="10000" step="10" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>n<sub>real</sub></label>
+                <input type="number" id="n_real" value="2.42" min="1" max="4" step="0.01" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>Density <span class="unit">[kg/m³]</span></label>
+                <input type="number" id="density" value="3510" min="100" max="30000" step="100" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>n<sub>imag</sub> <span class="tooltip-icon" title="Imaginary part of refractive index. Set 0 for no absorption.">?</span></label>
+                <input type="number" id="n_imag" value="0" min="0" max="1" step="1e-7" oninput="calculate()">
+            </div>
+        </div>
+
+        <!-- Laser -->
+        <div class="card">
+            <h2>Laser</h2>
+            <div class="field">
+                <label>Wavelength <span class="unit">[nm]</span></label>
+                <input type="number" id="wavelength" value="1064" min="200" max="11000" step="10" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>Beam waist w₀ <span class="unit">[µm]</span></label>
+                <input type="number" id="beamwaist" value="1.0" min="0.1" max="500" step="0.1" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>Power (PSD) <span class="unit">[mW]</span></label>
+                <div class="power-row">
+                    <input type="number" id="power" value="100" min="0.1" max="50000" step="1" oninput="syncSlider(); calculate()">
+                    <input type="range" id="power_slider" min="0.1" max="5000" step="0.5" value="100" oninput="syncNumber(); calculate()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Environment -->
+        <div class="card">
+            <h2>Environment</h2>
+            <div class="field">
+                <label>Temperature <span class="unit">[K]</span></label>
+                <input type="number" id="temperature" value="300" min="0.001" max="1000" step="1" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>Gas pressure <span class="unit">[mbar]</span></label>
+                <input type="number" id="gas_pressure" value="5" min="1e-10" max="1000" step="1" oninput="calculate()">
+            </div>
+        </div>
+
+        <!-- Power sweep range for freq plot -->
+        <div class="card">
+            <h2>Freq Plot Range</h2>
+            <div class="field">
+                <label>P<sub>min</sub> <span class="unit">[mW]</span></label>
+                <input type="number" id="p_sweep_min" value="5" min="0.1" max="1000" step="1" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>P<sub>max</sub> <span class="unit">[mW]</span></label>
+                <input type="number" id="p_sweep_max" value="200" min="1" max="50000" step="10" oninput="calculate()">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== TAB PANELS ==================== -->
+
+<!-- ────────── TAB: ALL ────────── -->
+<div id="tab-all" class="tab-panel active">
+    <div class="container" style="padding-top:4px;">
+
+        <!-- SECTION A: Dipole Trap -->
+        <div class="section-header blue">⚡ Dipole Trap Calculator — Forces &amp; Potential</div>
+
+        <!-- Optics -->
+        <div class="optics-row">
+            <div class="card">
+                <h2>Focusing Optics</h2>
+                <div class="beam-toggle">
+                    <input type="checkbox" id="use_optics" checked onchange="toggleOptics(); calculate()">
+                    <label for="use_optics">Use lens model (auto-compute w₀ and P<sub>eff</sub>)</label>
+                </div>
+                <div id="optics-fields">
+                    <div class="field">
+                        <label>Objective NA</label>
+                        <input type="number" id="obj_na" value="0.8" min="0.05" max="1.5" step="0.01" oninput="calculate()">
+                    </div>
+                    <div class="field">
+                        <label>Input beam 1/e² diameter <span class="unit">[mm]</span></label>
+                        <input type="number" id="beam_diam" value="5.0" min="0.1" max="50" step="0.1" oninput="calculate()">
+                    </div>
+                    <div class="field">
+                        <label>Lens clear aperture <span class="unit">[mm]</span></label>
+                        <input type="number" id="lens_aperture" value="4.0" min="0.1" max="50" step="0.1" oninput="calculate()">
+                    </div>
+                    <div class="field">
+                        <label>Input laser power <span class="unit">[mW]</span></label>
+                        <input type="number" id="input_power" value="200" min="0.1" max="50000" step="1" oninput="calculate()">
+                    </div>
+                    <div class="optics-info" id="optics-info"></div>
+                </div>
+            </div>
+            <div class="card" id="beam-profile-card">
+                <h2>Beam Profile at Lens</h2>
+                <div id="plot-beam-profile" style="height:220px;"></div>
+            </div>
+        </div>
+
+        <!-- Dipole results -->
+        <div class="card results-card" id="results-card">
+            <h2>Dipole Trap Results</h2>
+            <div id="results-grid"></div>
+            <div id="status-container"></div>
+        </div>
+
+        <!-- Force / potential plots -->
+        <div class="plots-grid">
+            <div class="plot-card axial">
+                <div class="eq-box" id="eq-axial"></div>
+                <div id="plot-axial-force"></div>
+            </div>
+            <div class="plot-card radial">
+                <div class="eq-box" id="eq-radial"></div>
+                <div id="plot-radial-force"></div>
+            </div>
+            <div class="plot-card wide">
+                <div class="eq-box" id="eq-potential"></div>
+                <div id="plot-3d-potential"></div>
+            </div>
+        </div>
+
+        <!-- SECTION B: Trap Frequency & PSD -->
+        <div class="section-header purple" style="margin-top:10px;">📈 Trap Frequency vs. Power &amp; Position PSD</div>
+
+        <!-- PSD results -->
+        <div class="card results-card">
+            <h2 class="purple">PSD Results (at selected power)</h2>
+            <div id="psd-results-grid"></div>
+        </div>
+
+        <!-- PSD plots -->
+        <div class="psd-plots-grid">
+            <div class="psd-plot-card">
+                <div id="plot-trap-freq"></div>
+            </div>
+            <div class="psd-plot-card">
+                <div id="plot-psd"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ────────── TAB: DIPOLE ────────── -->
+<div id="tab-dipole" class="tab-panel">
+    <div class="container" style="padding-top:4px;">
+        <div class="section-header blue">⚡ Dipole Trap Calculator — Forces &amp; Potential</div>
+        <div class="optics-row">
+            <div class="card">
+                <h2>Focusing Optics</h2>
+                <div class="beam-toggle">
+                    <input type="checkbox" id="use_optics2" checked onchange="syncOpticsCheckbox('use_optics2','use_optics'); toggleOptics(); calculate()">
+                    <label for="use_optics2">Use lens model (auto-compute w₀ and P<sub>eff</sub>)</label>
+                </div>
+                <div id="optics-fields2">
+                    <div class="optics-info" id="optics-info2">
+                        <span class="oi" style="font-style:italic;color:#94a3b8;">Parameters shared from global inputs</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Beam Profile at Lens</h2>
+                <div id="plot-beam-profile2" style="height:220px;"></div>
+            </div>
+        </div>
+        <div class="card results-card">
+            <h2>Dipole Trap Results</h2>
+            <div id="results-grid2"></div>
+            <div id="status-container2"></div>
+        </div>
+        <div class="plots-grid">
+            <div class="plot-card axial"><div id="plot-axial-force2"></div></div>
+            <div class="plot-card radial"><div id="plot-radial-force2"></div></div>
+            <div class="plot-card wide"><div id="plot-3d-potential2" style="height:390px;"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ────────── TAB: PSD ────────── -->
+<div id="tab-psd" class="tab-panel">
+    <div class="container" style="padding-top:4px;">
+        <div class="section-header purple">📈 Trap Frequency vs. Power &amp; Position PSD</div>
+        <div class="card results-card">
+            <h2 class="purple">PSD Results (at selected power)</h2>
+            <div id="psd-results-grid3"></div>
+        </div>
+        <div class="psd-plots-grid">
+            <div class="psd-plot-card"><div id="plot-trap-freq3" style="height:340px;"></div></div>
+            <div class="psd-plot-card"><div id="plot-psd3"       style="height:340px;"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== Symbols explanation ==================== -->
+<div class="card" style="margin: 16px auto; max-width: 900px;">
+    <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 6px;">Explanation of Symbols</h2>
+    <ul style="line-height: 2.1; columns: 2; gap: 40px;">
+        <li><b>P</b> — Laser power (W)</li>
+        <li><b>w₀</b> — Beam waist at focus (μm)</li>
+        <li><b>λ</b> — Laser wavelength (nm)</li>
+        <li><b>n</b> — Particle refractive index</li>
+        <li><b>a</b> — Particle radius (nm)</li>
+        <li><b>ρ</b> — Particle density (kg/m³)</li>
+        <li><b>U</b> — Dipole potential (J or k<sub>B</sub>T)</li>
+        <li><b>F<sub>grad</sub></b> — Gradient force (N)</li>
+        <li><b>F<sub>scat</sub></b> — Scattering force (N)</li>
+        <li><b>z<sub>R</sub></b> — Rayleigh range (μm)</li>
+        <li><b>α</b> — Polarizability (C·m²/V)</li>
+        <li><b>Γ</b> — Gas damping rate (rad/s)</li>
+        <li><b>f<sub>ax</sub></b> — Axial trap frequency (kHz)</li>
+        <li><b>f<sub>r</sub></b>  — Radial trap frequency (kHz)</li>
+        <li><b>S<sub>x</sub>(ω)</b> — Position PSD (m²/Hz)</li>
+        <li><b>FWHM</b> — Full width at half maximum of PSD peak</li>
+    </ul>
+</div>
+
+<script>
+// =========================================================================
+// Physical constants
+// =========================================================================
+const C_LIGHT = 2.998e8;
+const EPS0    = 8.854187817e-12;
+const KB      = 1.380649e-23;
+const H_PLANCK = 6.62607015e-34;
+const HBAR    = H_PLANCK / (2 * Math.PI);
+const G_GRAV  = 9.81;
+const SIGMA_SB = 5.670374419e-8;
+const M_GAS_N2 = 28.014 * 1.66054e-27; // N₂ molecular mass [kg]
+
+// =========================================================================
+// Presets
+// =========================================================================
+const PRESETS = {
+    silica:      { n_real: 1.45, density: 2000, diameter: 300,  n_imag: 0 },
+    diamond:     { n_real: 2.42, density: 3510, diameter: 150,  n_imag: 0 },
+    polystyrene: { n_real: 1.59, density: 1050, diameter: 500,  n_imag: 0 },
+};
+
+function applyPreset() {
+    const key = document.getElementById('preset').value;
+    if (key === 'custom') return;
+    const p = PRESETS[key];
+    document.getElementById('n_real').value    = p.n_real;
+    document.getElementById('density').value   = p.density;
+    document.getElementById('diameter').value  = p.diameter;
+    document.getElementById('n_imag').value    = p.n_imag;
+    calculate();
+}
+
+function syncSlider() {
+    document.getElementById('power_slider').value = document.getElementById('power').value;
+}
+function syncNumber() {
+    document.getElementById('power').value = document.getElementById('power_slider').value;
+}
+function syncOpticsCheckbox(src, dst) {
+    document.getElementById(dst).checked = document.getElementById(src).checked;
+}
+
+function toggleOptics() {
+    const on = document.getElementById('use_optics').checked;
+    document.getElementById('optics-fields').style.display = on ? '' : 'none';
+    document.getElementById('beam-profile-card').style.display = on ? '' : 'none';
+    document.getElementById('beamwaist').disabled = on;
+    document.getElementById('power').disabled = on;
+    document.getElementById('power_slider').disabled = on;
+    // Mirror to tab2
+    document.getElementById('use_optics2').checked = on;
+}
+
+// =========================================================================
+// Tab management
+// =========================================================================
+function switchTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.currentTarget.classList.add('active');
+    // Resize plots after a short delay
+    setTimeout(resizeAll, 80);
+}
+
+// =========================================================================
+// Optics model
+// =========================================================================
+function computeOptics() {
+    const NA           = parseFloat(document.getElementById('obj_na').value);
+    const beam_diam_mm = parseFloat(document.getElementById('beam_diam').value);
+    const aperture_mm  = parseFloat(document.getElementById('lens_aperture').value);
+    const P_in_mW      = parseFloat(document.getElementById('input_power').value);
+    const lam_nm       = parseFloat(document.getElementById('wavelength').value);
+
+    const w_beam = (beam_diam_mm / 2) * 1e-3;
+    const R_ap   = (aperture_mm  / 2) * 1e-3;
+    const lam    = lam_nm * 1e-9;
+    const P_in   = P_in_mW * 1e-3;
+
+    const beta    = w_beam / R_ap;
+    const T_power = 1 - Math.exp(-2 * R_ap*R_ap / (w_beam*w_beam));
+    const P_eff   = P_in * T_power;
+
+    const w0_airy = 0.61 * lam / NA;
+    let w0_eff;
+    if (beta < 0.01) {
+        w0_eff = w0_airy * 100;
+    } else if (beta >= 100) {
+        const f_eff = R_ap / NA;
+        w0_eff = lam * f_eff / (Math.PI * w_beam);
+    } else {
+        const b2  = beta * beta;
+        const eb2 = Math.exp(-b2);
+        const num = Math.sqrt(1 - (1 + b2) * eb2);
+        const den = (1 - eb2) * beta;
+        const M   = Math.sqrt(2) * num / den;
+        w0_eff = (lam / (Math.PI * NA)) * M;
+        if (w0_eff < w0_airy * 0.9) w0_eff = w0_airy;
+    }
+    return { beta, T_power, P_eff, w0_eff, w0_airy, w_beam, R_ap, P_in, NA, lam };
+}
+
+function updateOpticsInfo(opt) {
+    const b    = opt.beta;
+    const fill = b > 1.2 ? 'Overfill' : (b > 0.8 ? 'Matched' : 'Underfill');
+    const html = [
+        `<span class="oi">β = <b>${b.toFixed(2)}</b> (${fill})</span>`,
+        `<span class="oi">Throughput = <b>${(opt.T_power*100).toFixed(1)}%</b></span>`,
+        `<span class="oi">P<sub>eff</sub> = <b>${(opt.P_eff*1e3).toFixed(1)} mW</b></span>`,
+        `<span class="oi">w<sub>0,eff</sub> = <b>${(opt.w0_eff*1e6).toFixed(3)} µm</b></span>`,
+        `<span class="oi">w<sub>0,Airy</sub> = <b>${(opt.w0_airy*1e6).toFixed(3)} µm</b></span>`,
+    ].join('');
+    document.getElementById('optics-info').innerHTML  = html;
+    document.getElementById('optics-info2').innerHTML = html;
+}
+
+// =========================================================================
+// Beam profile plot (Tab All / Tab Dipole)
+// =========================================================================
+let beamPlotInit  = false;
+let beamPlotInit2 = false;
+
+function updateBeamProfilePlot(opt, suffix) {
+    const divId = 'plot-beam-profile' + suffix;
+    const { w_beam, R_ap } = opt;
+    const N = 300;
+    const rMax = Math.max(w_beam, R_ap) * 1.8;
+    const rArr = [], I_gauss = [], I_trunc = [];
+    for (let i = 0; i < N; i++) {
+        const r   = -rMax + 2*rMax*i/(N-1);
+        const r_mm = r * 1e3;
+        rArr.push(r_mm);
+        const g = Math.exp(-2*r*r/(w_beam*w_beam));
+        I_gauss.push(g);
+        I_trunc.push(Math.abs(r) <= R_ap ? g : 0);
+    }
+    const apR = R_ap * 1e3;
+    const traces = [
+        { x: rArr, y: I_gauss, name: 'Input Gaussian', line: { color: '#94a3b8', width: 1.5, dash: 'dot' } },
+        { x: rArr, y: I_trunc, name: 'Transmitted', line: { color: '#2563eb', width: 2 }, fill: 'tozeroy', fillcolor: 'rgba(37,99,235,0.12)' },
+        { x: [apR,apR],   y: [0,1.05], mode:'lines', name:'Aperture', line:{color:'#dc2626',width:2,dash:'dash'} },
+        { x: [-apR,-apR], y: [0,1.05], mode:'lines', name:'',         line:{color:'#dc2626',width:2,dash:'dash'}, showlegend:false },
+    ];
+    const layout = {
+        margin: { l:40, r:10, t:10, b:38 },
+        font: { family:'Segoe UI,system-ui,sans-serif', size:10 },
+        paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'#fafbfc',
+        xaxis: { title:'r [mm]', gridcolor:'#e8ecf0', zerolinecolor:'#c0c8d0' },
+        yaxis: { title:'I / I₀', range:[0,1.1], gridcolor:'#e8ecf0', zerolinecolor:'#c0c8d0' },
+        legend: { x:0.02,y:0.98, bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#ddd', borderwidth:1, font:{size:9} },
+        autosize: true,
+        annotations: [{ x:apR, y:1.08, xanchor:'center', yanchor:'bottom', text:`R=${apR.toFixed(1)}mm`, showarrow:false, font:{size:9,color:'#dc2626'} }]
+    };
+    if (suffix === '') {
+        if (!beamPlotInit)  { Plotly.newPlot(divId, traces, layout, {responsive:true,displayModeBar:false}); beamPlotInit  = true; }
+        else                  Plotly.react(divId,  traces, layout, {responsive:true,displayModeBar:false});
+    } else {
+        if (!beamPlotInit2) { Plotly.newPlot(divId, traces, layout, {responsive:true,displayModeBar:false}); beamPlotInit2 = true; }
+        else                  Plotly.react(divId,  traces, layout, {responsive:true,displayModeBar:false});
+    }
+}
+
+// =========================================================================
+// Read shared inputs
+// =========================================================================
+function readInputs() {
+    const d_nm   = parseFloat(document.getElementById('diameter').value);
+    const n_r    = parseFloat(document.getElementById('n_real').value);
+    const n_i    = parseFloat(document.getElementById('n_imag').value) || 0;
+    const rho    = parseFloat(document.getElementById('density').value);
+    const lam_nm = parseFloat(document.getElementById('wavelength').value);
+    const w0_um  = parseFloat(document.getElementById('beamwaist').value);
+    const P_mW   = parseFloat(document.getElementById('power').value);
+    const T_K    = parseFloat(document.getElementById('temperature').value);
+    const P_gas_mbar = parseFloat(document.getElementById('gas_pressure').value);
+    const P_sweep_min_mW = parseFloat(document.getElementById('p_sweep_min').value);
+    const P_sweep_max_mW = parseFloat(document.getElementById('p_sweep_max').value);
+
+    return {
+        a:   (d_nm/2)*1e-9,
+        d:    d_nm*1e-9,
+        n_r, n_i, rho,
+        lam:  lam_nm*1e-9,
+        w0:   w0_um*1e-6,
+        P:    P_mW*1e-3,
+        T:    T_K,
+        P_gas_Pa: P_gas_mbar * 100.0,
+        P_sweep_min: P_sweep_min_mW * 1e-3,
+        P_sweep_max: P_sweep_max_mW * 1e-3,
+    };
+}
+
+// =========================================================================
+// Physics — Dipole trap
+// =========================================================================
+function computeDipole(p) {
+    const { a, n_r, n_i, rho, lam, w0, P, T } = p;
+    const n2   = n_r * n_r;
+    const mass = rho * (4/3) * Math.PI * a*a*a;
+    const alpha = 4 * Math.PI * EPS0 * a*a*a * (n2-1)/(n2+2);
+    const zR  = Math.PI * w0*w0 / lam;
+    const I0  = 2*P/(Math.PI*w0*w0);
+
+    const U0         = -alpha * P / (Math.PI * EPS0 * C_LIGHT * w0*w0);
+    const trapDepth  = Math.abs(U0);
+    const trapDepth_kBT = trapDepth / (KB*T);
+
+    const k_radial = 4*trapDepth / (w0*w0);
+    const k_axial  = 2*trapDepth / (zR*zR);
+    const omega_radial = Math.sqrt(k_radial/mass);
+    const omega_axial  = Math.sqrt(k_axial /mass);
+    const f_radial = omega_radial/(2*Math.PI);
+    const f_axial  = omega_axial /(2*Math.PI);
+
+    const F_rad_max = 2*P*alpha/(C_LIGHT*Math.sqrt(Math.E)*Math.PI*w0*w0*w0*EPS0);
+
+    const CM       = (n2-1)/(n2+2);
+    const sigma_scat = (128*Math.pow(Math.PI,5)*Math.pow(a,6)) / (3*Math.pow(lam,4)) * CM*CM;
+    const P_scat   = sigma_scat * I0;
+    const F_scat_focus = 256*Math.pow(a,6)*(n2-1)*(n2-1)*P*Math.pow(Math.PI,6)*w0*w0 /
+        (3*C_LIGHT*(n2+2)*(n2+2)*Math.pow(lam,4)*Math.pow(Math.PI,2)*Math.pow(w0,4));
+
+    const photon_energy = H_PLANCK * C_LIGHT / lam;
+    const Gamma_scat = P_scat / photon_energy;
+    const k_wave = 2*Math.PI/lam;
+    const E_recoil = (HBAR*k_wave)*(HBAR*k_wave)/(2*mass);
+    const P_recoil = Gamma_scat * E_recoil;
+    const P_recoil_per = P_recoil/3;
+    const dn_radial = P_recoil_per/(HBAR*omega_radial);
+    const dn_axial  = P_recoil_per/(HBAR*omega_axial);
+    const dT_recoil = P_recoil/KB;
+
+    let sigma_abs=0, P_abs=0, dT_internal=0;
+    if (n_i > 0) {
+        const Im_CM = 6*n_r*n_i / ((n2+2)*(n2+2));
+        sigma_abs = (8*Math.PI*Math.PI*a*a*a/lam)*Im_CM;
+        P_abs = sigma_abs * I0;
+        dT_internal = P_abs/(16*Math.PI*a*a*SIGMA_SB*T*T*T);
+    }
+
+    const a_max_rayleigh = lam/(2*Math.PI);
+    const rayleigh_ok    = a < a_max_rayleigh;
+
+    const P_min_grav = C_LIGHT*Math.sqrt(Math.E)*mass*G_GRAV*w0*w0*w0*(n2+2) / (8*a*a*a*(n2-1));
+    const P_min_temp = C_LIGHT*KB*T*w0*w0*(n2+2) / (4*a*a*a*(n2-1));
+    const P_min      = Math.max(P_min_grav, P_min_temp);
+    const trapping_ok = P >= P_min;
+    const grad_scat_ratio = Math.abs(F_rad_max)/F_scat_focus;
+
+    return {
+        mass, alpha, zR, I0, U0, trapDepth, trapDepth_kBT,
+        f_radial, f_axial, omega_radial, omega_axial,
+        F_rad_max, sigma_scat, P_scat, F_scat_focus,
+        Gamma_scat, E_recoil, P_recoil, dT_recoil, dn_radial, dn_axial,
+        sigma_abs, P_abs, dT_internal,
+        rayleigh_ok, a_max_rayleigh,
+        P_min_grav, P_min_temp, P_min, trapping_ok, grad_scat_ratio,
+        ...p
+    };
+}
+
+// =========================================================================
+// Physics — Gas damping & PSD
+// =========================================================================
+function calcGamma(R, P_gas_Pa, T_gas, mass) {
+    const v_t = Math.sqrt(8.0*KB*T_gas / (Math.PI*M_GAS_N2));
+    const num  = 4.0*Math.PI*M_GAS_N2*R*R*v_t*P_gas_Pa;
+    const den  = 3.0*KB*T_gas*mass;
+    return (num/den) * (1.0 + Math.PI/8.0);
+}
+
+function PSD_SHO(omega, omega0, Gamma, T, mass) {
+    const num = 2.0*Gamma*KB*T / (Math.PI*mass);
+    const den = Math.pow(omega*omega - omega0*omega0, 2) + Gamma*Gamma*omega*omega;
+    return num/den;
+}
+
+function calcFWHM(f_arr, S_arr) {
+    let peakIdx = 0, peakVal = -Infinity;
+    for (let i=0; i<S_arr.length; i++) { if (S_arr[i]>peakVal) { peakVal=S_arr[i]; peakIdx=i; } }
+    const half = peakVal/2;
+    let left = peakIdx, right = peakIdx;
+    for (let i=peakIdx; i>=0; i--)          { if (S_arr[i]<half) { left  = i; break; } }
+    for (let i=peakIdx; i<S_arr.length; i++) { if (S_arr[i]<half) { right = i; break; } }
+    return f_arr[right] - f_arr[left];
+}
+
+// Clausius-Mossotti polarizability (consistent with TweezerPSD.py formula)
+function calcAlphaCM(a, n_NP, n_m, epsilon0) {
+    const cm = (n_NP*n_NP - n_m*n_m) / (n_NP*n_NP + 2*n_m*n_m);
+    return 4*Math.PI*epsilon0*a*a*a*cm;
+}
+
+function computePSD(p) {
+    const { a, n_r, rho, lam, w0, P, T, P_gas_Pa, P_sweep_min, P_sweep_max } = p;
+    const n_m = 1.0;
+    const alpha = calcAlphaCM(a, n_r, n_m, EPS0);
+    const mass  = rho * (4/3) * Math.PI * a*a*a;
+    const Gamma = calcGamma(a, P_gas_Pa, T, mass);
+
+    // Trap stiffness at single power P
+    const k_ax  = (2*alpha*lam*lam*P) / (Math.pow(Math.PI,3)*C_LIGHT*EPS0*Math.pow(w0,6));
+    const k_r   = (4*alpha*P) / (Math.PI*C_LIGHT*EPS0*Math.pow(w0,4));
+    const omega_ax = Math.sqrt(k_ax/mass);
+    const omega_r  = Math.sqrt(k_r /mass);
+    const f_ax = omega_ax/(2*Math.PI);
+    const f_r  = omega_r /(2*Math.PI);
+
+    // Power sweep (120 points) — selected material only
+    const N_sweep = 120;
+    const P_arr = [], f_r_sel = [], f_ax_sel = [];
+    for (let i=0; i<N_sweep; i++) {
+        const Pi = P_sweep_min + (P_sweep_max-P_sweep_min)*i/(N_sweep-1);
+        P_arr.push(Pi*1000); // mW for plotting
+        const k_r_i  = (4*alpha*Pi) / (Math.PI*C_LIGHT*EPS0*Math.pow(w0,4));
+        const k_ax_i = (2*alpha*lam*lam*Pi) / (Math.pow(Math.PI,3)*C_LIGHT*EPS0*Math.pow(w0,6));
+        f_r_sel .push(Math.sqrt(k_r_i /mass)/(2*Math.PI*1000));
+        f_ax_sel.push(Math.sqrt(k_ax_i/mass)/(2*Math.PI*1000));
+    }
+
+    // PSD frequency axis
+    const Gamma_Hz = Gamma/(2*Math.PI);
+    const hw  = 5*Gamma_Hz;
+    const f0_ax = f_ax, f0_r = f_r;
+    const N_psd = 100000;
+    const f_min = f0_ax - hw, f_max = f0_r + hw;
+    const f_psd = [], S_ax = [], S_r = [];
+    for (let i=0; i<N_psd; i++) {
+        const f = f_min + (f_max-f_min)*i/(N_psd-1);
+        f_psd.push(f);
+        S_ax.push(PSD_SHO(2*Math.PI*f, omega_ax, Gamma, T, mass));
+        S_r .push(PSD_SHO(2*Math.PI*f, omega_r,  Gamma, T, mass));
+    }
+    const fwhm_ax = calcFWHM(f_psd, S_ax);
+    const fwhm_r  = calcFWHM(f_psd, S_r);
+
+    return {
+        mass, alpha, Gamma, Gamma_Hz,
+        omega_ax, omega_r, f_ax, f_r,
+        k_ax, k_r,
+        P_arr, f_r_sel, f_ax_sel,
+        f_psd, S_ax, S_r, fwhm_ax, fwhm_r,
+        f_min, f_max,
+    };
+}
+
+// =========================================================================
+// Force functions for plotting
+// =========================================================================
+function F_grad_axial(y, a, n_r, P, w0, lam) {
+    const n2 = n_r*n_r;
+    const D  = Math.PI*Math.PI*w0*w0*w0*w0 + y*y*lam*lam;
+    return -8*a*a*a*(n2-1)*P*Math.PI*Math.PI*w0*w0*y*lam*lam / (C_LIGHT*(n2+2)*D*D);
+}
+function F_scat_axial(y, a, n_r, P, w0, lam) {
+    const n2 = n_r*n_r;
+    const D  = Math.PI*Math.PI*w0*w0*w0*w0 + y*y*lam*lam;
+    return 256*Math.pow(a,6)*(n2-1)*(n2-1)*P*Math.pow(Math.PI,6)*w0*w0 /
+           (3*C_LIGHT*(n2+2)*(n2+2)*Math.pow(lam,4)*D);
+}
+function F_radial(r, a, n_r, P, w0) {
+    const n2 = n_r*n_r;
+    return 16*a*a*a*(n2-1)*P*r*Math.exp(-2*r*r/(w0*w0)) / ((n2+2)*C_LIGHT*w0*w0*w0*w0);
+}
+function U_dipole_full(r, y, a, n_r, P, w0, lam) {
+    const n2 = n_r*n_r;
+    const D  = Math.PI*Math.PI*w0*w0*w0*w0 + y*y*lam*lam;
+    return -4*a*a*a*(n2-1)*P*Math.PI*Math.PI*w0*w0 *
+           Math.exp(-2*Math.PI*Math.PI*r*r*w0*w0/D) / (C_LIGHT*(n2+2)*D);
+}
+function F_scat_radial_profile(r, F0, w0) {
+    return F0 * Math.exp(-2*r*r/(w0*w0));
+}
+
+// =========================================================================
+// Smart unit formatting
+// =========================================================================
+function fmtForce(v) {
+    const a = Math.abs(v);
+    if (a>=1e-3)  return (v*1e3 ).toFixed(2)+' mN';
+    if (a>=1e-6)  return (v*1e6 ).toFixed(2)+' µN';
+    if (a>=1e-9)  return (v*1e9 ).toFixed(2)+' nN';
+    if (a>=1e-12) return (v*1e12).toFixed(3)+' pN';
+    if (a>=1e-15) return (v*1e15).toFixed(3)+' fN';
+    return v.toExponential(2)+' N';
+}
+function fmtFreq(f) {
+    if (f>=1e9) return (f/1e9).toFixed(2)+' GHz';
+    if (f>=1e6) return (f/1e6).toFixed(2)+' MHz';
+    if (f>=1e3) return (f/1e3).toFixed(2)+' kHz';
+    return f.toFixed(1)+' Hz';
+}
+function fmtPower(v) {
+    const a = Math.abs(v);
+    if (a>=1)    return v.toFixed(2)+' W';
+    if (a>=1e-3) return (v*1e3).toFixed(2)+' mW';
+    if (a>=1e-6) return (v*1e6).toFixed(2)+' µW';
+    if (a>=1e-9) return (v*1e9).toFixed(2)+' nW';
+    return v.toExponential(2)+' W';
+}
+function fmtSci(v, u) {
+    const e = Math.floor(Math.log10(Math.abs(v)));
+    if (e>=-2 && e<=3) return v.toPrecision(4)+' '+u;
+    return v.toExponential(2)+' '+u;
+}
+function fmtTemp(v) {
+    const a = Math.abs(v);
+    if (a>=1)    return v.toFixed(1)+' K';
+    if (a>=1e-3) return (v*1e3).toFixed(2)+' mK';
+    if (a>=1e-6) return (v*1e6).toFixed(2)+' µK';
+    if (a>=1e-9) return (v*1e9).toFixed(2)+' nK';
+    return v.toExponential(2)+' K';
+}
+function ri(lbl, val, cls) {
+    return `<span class="result-item"><span class="label">${lbl}</span><span class="sep">=</span><span class="value ${cls||''}">${val}</span></span>`;
+}
+function forceUnitAndScale(maxVal) {
+    const v = Math.abs(maxVal);
+    if (v>=1e-3)  return {scale:1e3,  unit:'mN'};
+    if (v>=1e-6)  return {scale:1e6,  unit:'µN'};
+    if (v>=1e-9)  return {scale:1e9,  unit:'nN'};
+    if (v>=1e-12) return {scale:1e12, unit:'pN'};
+    if (v>=1e-15) return {scale:1e15, unit:'fN'};
+    return {scale:1e18, unit:'aN'};
+}
+
+// =========================================================================
+// Update results panels
+// =========================================================================
+function updateDipoleResults(r, suffix) {
+    const grid = document.getElementById('results-grid'+suffix);
+    let html = '';
+    html += '<div class="results-section-title">Trap Parameters</div><div class="results-line">';
+    html += ri('Trap depth', r.trapDepth_kBT.toFixed(1)+' k<sub>B</sub>T', r.trapDepth_kBT>10?'good':(r.trapDepth_kBT>1?'warn':'bad'));
+    html += ri('U₀', fmtTemp(r.trapDepth/KB));
+    html += ri('f<sub>radial</sub>', fmtFreq(r.f_radial));
+    html += ri('f<sub>axial</sub>',  fmtFreq(r.f_axial));
+    html += ri('z<sub>R</sub>', (r.zR*1e6).toFixed(2)+' µm');
+    html += ri('Grad/Scat', r.grad_scat_ratio.toFixed(1)+'×', r.grad_scat_ratio>1?'good':'bad');
+    html += '</div>';
+    html += '<div class="results-section-title">Forces</div><div class="results-line">';
+    html += ri('Max |F<sub>grad</sub>|', fmtForce(Math.abs(r.F_rad_max)));
+    html += ri('F<sub>scat</sub> @ focus', fmtForce(r.F_scat_focus));
+    html += '</div>';
+    html += '<div class="results-section-title">Scattering &amp; Heating</div><div class="results-line">';
+    html += ri('P<sub>scat</sub>', fmtPower(r.P_scat));
+    html += ri('Γ<sub>scat</sub>', fmtSci(r.Gamma_scat,'ph/s'));
+    html += ri('Recoil heating', fmtSci(r.dT_recoil,'K/s'));
+    html += '</div>';
+    html += '<div class="results-section-title">Particle</div><div class="results-line">';
+    html += ri('Mass', fmtSci(r.mass,'kg'));
+    html += ri('Radius', (r.a*1e9).toFixed(0)+' nm');
+    html += ri('Rayleigh', r.rayleigh_ok?'✓ a ≪ λ':'✗ a too large', r.rayleigh_ok?'good':'bad');
+    html += '</div>';
+    grid.innerHTML = html;
+
+    const sc = document.getElementById('status-container'+suffix);
+    if (r.trapping_ok) {
+        sc.innerHTML = `<div class="status-box ok">✓ Trapping OK &nbsp;|&nbsp; P<sub>min</sub> = ${fmtPower(r.P_min)} (grav: ${fmtPower(r.P_min_grav)}, therm: ${fmtPower(r.P_min_temp)})</div>`;
+    } else {
+        sc.innerHTML = `<div class="status-box fail">✗ Need P ≥ ${fmtPower(r.P_min)} &nbsp;|&nbsp; grav: ${fmtPower(r.P_min_grav)}, therm: ${fmtPower(r.P_min_temp)}</div>`;
+    }
+}
+
+function updatePSDResults(d, p, suffix) {
+    const Gamma_Hz = d.Gamma/(2*Math.PI);
+    const html = [
+        ri('f<sub>ax</sub>',  (d.f_ax/1000).toFixed(3)+' kHz'),
+        ri('f<sub>r</sub>',   (d.f_r /1000).toFixed(3)+' kHz'),
+        ri('Γ (gas)', fmtFreq(d.Gamma)),
+        ri('FWHM axial',  (d.fwhm_ax/1000).toFixed(4)+' kHz'),
+        ri('FWHM radial', (d.fwhm_r /1000).toFixed(4)+' kHz'),
+        ri('Q axial',  (d.f_ax/d.fwhm_ax).toFixed(0)),
+        ri('Q radial', (d.f_r /d.fwhm_r ).toFixed(0)),
+        ri('P<sub>gas</sub>', p.P_gas_Pa/100+' mbar'),
+    ].join('');
+    document.getElementById(suffix).innerHTML = '<div class="results-line">'+html+'</div>';
+}
+
+// =========================================================================
+// Plot helpers — base layout
+// =========================================================================
+const baseLayout = {
+    margin: { l:62, r:20, t:40, b:50 },
+    font: { family:'Segoe UI,system-ui,sans-serif', size:11 },
+    paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'#fafbfc',
+    xaxis: { gridcolor:'#e8ecf0', zerolinecolor:'#c0c8d0' },
+    yaxis: { gridcolor:'#e8ecf0', zerolinecolor:'#c0c8d0', exponentformat:'e' },
+    legend: { x:0.02,y:0.98, bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#ddd', borderwidth:1, font:{size:10} },
+    autosize: true,
+};
+const plotCfg    = { responsive:true, displayModeBar:false };
+const plotCfg3d  = { responsive:true, displayModeBar:true, modeBarButtonsToRemove:['toImage'] };
+
+// Track init state
+const inited = {};
+
+function plotOrReact(divId, traces, layout, cfg) {
+    if (!inited[divId]) {
+        Plotly.newPlot(divId, traces, layout, cfg);
+        inited[divId] = true;
+    } else {
+        Plotly.react(divId, traces, layout, cfg);
+    }
+}
+
+// =========================================================================
+// Dipole plots
+// =========================================================================
+function updateDipolePlots(r, suffix) {
+    const { a, n_r, P, w0, lam, zR } = r;
+    const N = 500;
+
+    // Axial forces
+    const yRange = 5*zR;
+    const yArr=[],Fg=[],Fs=[];
+    for (let i=0;i<N;i++) {
+        const y = -yRange+2*yRange*i/(N-1);
+        yArr.push(y*1e6);
+        Fg.push(F_grad_axial(y,a,n_r,P,w0,lam));
+        Fs.push(F_scat_axial(y,a,n_r,P,w0,lam));
+    }
+    const maxF1 = Math.max(Math.max(...Fg.map(Math.abs)),Math.max(...Fs.map(Math.abs)));
+    const fu1   = forceUnitAndScale(maxF1);
+    const t1a = { x:yArr, y:Fg.map(v=>v*fu1.scale), name:'F_grad', line:{color:'#2563eb',width:2} };
+    const t1b = { x:yArr, y:Fs.map(v=>v*fu1.scale), name:'F_scatter', line:{color:'#dc2626',width:2,dash:'dash'} };
+    const l1  = {...baseLayout, title:{text:'Forces along beam axis (r=0)',font:{size:13}},
+        xaxis:{...baseLayout.xaxis,title:'y [µm]'},
+        yaxis:{...baseLayout.yaxis,title:`Force [${fu1.unit}]`}};
+
+    // Radial forces
+    const rRange=3*w0, rArr=[],Fr_g=[],Fr_s=[];
+    for (let i=0;i<N;i++) {
+        const rv = -rRange+2*rRange*i/(N-1);
+        rArr.push(rv*1e6);
+        Fr_g.push(F_radial(rv,a,n_r,P,w0));
+        Fr_s.push(F_scat_radial_profile(rv,r.F_scat_focus,w0));
+    }
+    const maxF2 = Math.max(Math.max(...Fr_g.map(Math.abs)),Math.max(...Fr_s.map(Math.abs)));
+    const fu2   = forceUnitAndScale(maxF2);
+    const t2a = { x:rArr, y:Fr_g.map(v=>v*fu2.scale), name:'F_grad (radial)', line:{color:'#2563eb',width:2} };
+    const t2b = { x:rArr, y:Fr_s.map(v=>v*fu2.scale), name:'F_scat @ r',     line:{color:'#dc2626',width:2,dash:'dash'} };
+    const l2  = {...baseLayout, title:{text:'Forces in radial plane (y=0)',font:{size:13}},
+        xaxis:{...baseLayout.xaxis,title:'r [µm]'},
+        yaxis:{...baseLayout.yaxis,title:`Force [${fu2.unit}]`}};
+
+    // 3D potential
+    const N3 = 100;
+    const hRange = Math.max(4*zR,2.5*w0);
+    const yA3=[],rA3=[],zD=[];
+    for (let j=0;j<N3;j++) yA3.push((-hRange+2*hRange*j/(N3-1))*1e6);
+    for (let i=0;i<N3;i++) {
+        rA3.push((-hRange+2*hRange*i/(N3-1))*1e6);
+        const row=[];
+        for (let j=0;j<N3;j++) {
+            const yv=-hRange+2*hRange*j/(N3-1);
+            const rv=-hRange+2*hRange*i/(N3-1);
+            row.push(U_dipole_full(rv,yv,a,n_r,P,w0,lam)/(KB*r.T));
+        }
+        zD.push(row);
+    }
+    const zMin = Math.min(...zD.flat());
+    const surf = {
+        x:yA3,y:rA3,z:zD, type:'surface',
+        colorscale:[[0,'rgb(191,219,254)'],[0.10,'rgb(103,232,249)'],[0.35,'rgb(34,211,238)'],
+                    [0.65,'rgb(139,92,246)'],[0.85,'rgb(217,70,239)'],[1.00,'rgb(153,27,27)']],
+        opacity:1.0,
+        lighting:{ambient:0.8,diffuse:0.9,specular:0.1,roughness:0.9},
+        contours:{z:{show:true,usecolormap:false,color:'#475569',project:{z:true}}},
+        colorbar:{title:'U/k_BT',titleside:'top'}
+    };
+    const floorColor = zD.map(row=>row.map(v=>v===zMin?1:0));
+    const floor = {
+        x:yA3,y:rA3,z:zD.map(row=>row.map(()=>zMin)),
+        surfacecolor:floorColor,type:'surface',
+        colorscale:[[0,'rgba(0,0,0,0)'],[1,'rgb(220,38,38)']],
+        cmin:0,cmax:1,opacity:1.0,showscale:false,hoverinfo:'skip',
+        lighting:{ambient:0.8,diffuse:0.9,specular:0.05,roughness:1.0},
+        contours:{x:{show:false},y:{show:false},z:{show:false}}
+    };
+    const l3 = {
+        title:{text:'3D Dipole Trap Potential U(r,y)',font:{size:14,family:'Segoe UI,system-ui,sans-serif'}},
+        scene:{
+            xaxis:{title:'y axial [µm]',range:[-hRange*1e6,hRange*1e6],backgroundcolor:'rgba(248,250,252,0.9)',gridcolor:'#dbe4ee',zerolinecolor:'#94a3b8'},
+            yaxis:{title:'r radial [µm]',range:[-hRange*1e6,hRange*1e6],backgroundcolor:'rgba(248,250,252,0.9)',gridcolor:'#dbe4ee',zerolinecolor:'#94a3b8'},
+            zaxis:{title:'U / k_B T',range:[zMin,0],backgroundcolor:'rgba(248,250,252,0.9)',gridcolor:'#dbe4ee',zerolinecolor:'#94a3b8'},
+            camera:{eye:{x:1.55,y:1.55,z:1.15}},aspectmode:'data'
+        },
+        margin:{l:10,r:10,t:50,b:10},
+        paper_bgcolor:'rgba(0,0,0,0)',font:{family:'Segoe UI,system-ui,sans-serif',size:11},autosize:true
+    };
+
+    plotOrReact('plot-axial-force'+suffix,  [t1a,t1b], l1, plotCfg);
+    plotOrReact('plot-radial-force'+suffix, [t2a,t2b], l2, plotCfg);
+    plotOrReact('plot-3d-potential'+suffix, [floor,surf], l3, plotCfg3d);
+}
+
+// =========================================================================
+// PSD plots
+// =========================================================================
+function updatePSDPlots(d, p, freqId, psdId) {
+    // Trap frequency vs power — selected material only
+    const matLabel = `${document.getElementById('preset').value !== 'custom'
+        ? document.getElementById('preset').options[document.getElementById('preset').selectedIndex].text
+        : 'Custom'} (r=${(p.a*1e9).toFixed(0)} nm, n=${p.n_r})`;
+    const tf1 = { x:d.P_arr, y:d.f_r_sel,  name:`Radial — ${matLabel}`,  line:{color:'#2563eb',width:2} };
+    const tf2 = { x:d.P_arr, y:d.f_ax_sel, name:`Axial  — ${matLabel}`,  line:{color:'#2563eb',width:2,dash:'dash'} };
+
+    const lTF = {...baseLayout,
+        title:{text:`Trap Frequency vs. Power  (w₀=${(p.w0*1e6).toFixed(2)} µm, λ=${(p.lam*1e9).toFixed(0)} nm)`,font:{size:13}},
+        xaxis:{...baseLayout.xaxis,title:'Power [mW]'},
+        yaxis:{...baseLayout.yaxis,title:'Trap Frequency [kHz]',exponentformat:'none'}};
+    plotOrReact(freqId, [tf1,tf2], lTF, plotCfg);
+
+    // PSD
+    const f_kHz = d.f_psd.map(f=>f/1000);
+    const s1 = { x:f_kHz, y:d.S_ax, name:`Axial PSD  (${(d.f_ax/1000).toFixed(2)} kHz)`, line:{color:'#2563eb',width:1.5} };
+    const s2 = { x:f_kHz, y:d.S_r,  name:`Radial PSD (${(d.f_r /1000).toFixed(2)} kHz)`, line:{color:'#ea580c',width:1.5} };
+    const vax = { x:[d.f_ax/1000,d.f_ax/1000], y:[0,Math.max(...d.S_ax,...d.S_r)*1.25],
+        mode:'lines', showlegend:false, line:{color:'#2563eb',width:0.8,dash:'dash'} };
+    const vr  = { x:[d.f_r /1000,d.f_r /1000], y:[0,Math.max(...d.S_ax,...d.S_r)*1.25],
+        mode:'lines', showlegend:false, line:{color:'#ea580c',width:0.8,dash:'dash'} };
+    const lPSD = {...baseLayout,
+        title:{text:`Position PSD  (P=${(p.P*1000).toFixed(0)} mW, P_gas=${p.P_gas_Pa/100} mbar)`,font:{size:13}},
+        xaxis:{...baseLayout.xaxis,title:'Frequency [kHz]',range:[d.f_min/1000,d.f_max/1000]},
+        yaxis:{...baseLayout.yaxis,title:'S_x(ω) [m²/Hz]'}};
+    plotOrReact(psdId, [s1,s2,vax,vr], lPSD, plotCfg);
+}
+
+// =========================================================================
+// Main calculate
+// =========================================================================
+function calculate() {
+    const p = readInputs();
+
+    // Optics override
+    const useOptics = document.getElementById('use_optics').checked;
+    if (useOptics) {
+        const opt = computeOptics();
+        if (!isNaN(opt.beta) && opt.beta>0 && opt.P_eff>0) {
+            p.w0 = opt.w0_eff;
+            p.P  = opt.P_eff;
+            document.getElementById('beamwaist').value = (opt.w0_eff*1e6).toFixed(3);
+            document.getElementById('power').value     = (opt.P_eff*1e3 ).toFixed(1);
+            syncSlider();
+            updateOpticsInfo(opt);
+            updateBeamProfilePlot(opt, '');
+            updateBeamProfilePlot(opt, '2');
+        }
+    }
+
+    if (p.a<=0 || p.n_r<=1 || p.w0<=0 || p.lam<=0 || p.P<=0) return;
+
+    // ── Dipole calc ──
+    const dr = computeDipole(p);
+    updateDipoleResults(dr, '');
+    updateDipolePlots(dr, '');
+    updateDipoleResults(dr, '2');
+    updateDipolePlots(dr, '2');
+
+    // ── PSD calc ──
+    const psd = computePSD(p);
+    updatePSDResults(psd, p, 'psd-results-grid');
+    updatePSDResults(psd, p, 'psd-results-grid3');
+    updatePSDPlots(psd, p, 'plot-trap-freq',  'plot-psd');
+    updatePSDPlots(psd, p, 'plot-trap-freq3', 'plot-psd3');
+}
+
+// =========================================================================
+// Resize helper
+// =========================================================================
+function resizeAll() {
+    ['plot-axial-force','plot-radial-force','plot-3d-potential',
+     'plot-axial-force2','plot-radial-force2','plot-3d-potential2',
+     'plot-beam-profile','plot-beam-profile2',
+     'plot-trap-freq','plot-psd','plot-trap-freq3','plot-psd3'
+    ].forEach(id => { try { Plotly.Plots.resize(id); } catch(e){} });
+}
+
+// =========================================================================
+// KaTeX equations
+// =========================================================================
+function renderEquations() {
+    katex.render(
+        String.raw`F_{\text{grad}}(y)=-\frac{8a^3(n^2-1)P\pi^2w_0^2y\lambda^2}{c(n^2+2)D^2}\qquad F_{\text{scat}}(y)=\frac{256a^6(n^2-1)^2P\pi^6w_0^2}{3c(n^2+2)^2\lambda^4 D}\qquad D=\pi^2w_0^4+y^2\lambda^2`,
+        document.getElementById('eq-axial'), {displayMode:true,throwOnError:false}
+    );
+    katex.render(
+        String.raw`F_{\text{grad},r}(r)=\frac{16a^3(n^2-1)Pr\,e^{-2r^2/w_0^2}}{(n^2+2)cw_0^4}\qquad F_{\text{scat}}(r)=F_{\text{scat}}(0)\cdot e^{-2r^2/w_0^2}`,
+        document.getElementById('eq-radial'), {displayMode:true,throwOnError:false}
+    );
+    katex.render(
+        String.raw`U(r,y)=-\frac{4a^3(n^2-1)P\pi^2w_0^2}{c(n^2+2)D}\exp\!\left(-\frac{2\pi^2r^2w_0^2}{D}\right)\qquad \alpha=4\pi\varepsilon_0a^3\frac{n^2-1}{n^2+2}`,
+        document.getElementById('eq-potential'), {displayMode:true,throwOnError:false}
+    );
+}
+
+// =========================================================================
+// Init
+// =========================================================================
+window.addEventListener('DOMContentLoaded', () => {
+    function tryInit() {
+        if (typeof katex !== 'undefined') {
+            renderEquations();
+            toggleOptics();
+            calculate();
+        } else {
+            setTimeout(tryInit, 50);
+        }
+    }
+    tryInit();
+});
+window.addEventListener('resize', resizeAll);
+</script>
+</body>
+</html>
