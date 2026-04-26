@@ -65,7 +65,7 @@
         }
         .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.9); }
 
-        .tab-panel { display: none; }
+        .tab-panel { display: none; min-height: auto; }
         .tab-panel.active { display: block; }
 
         /* ── Layout ── */
@@ -135,6 +135,14 @@
         /* ── Results ── */
         .results-card { padding: 14px 18px; }
         .results-card h2 { margin-bottom: 8px; }
+        @media (max-width: 700px) {
+            .results-card { padding: 6px 8px; }
+            .results-card h2 { margin-bottom: 4px; }
+        }
+        @media (max-width: 400px) {
+            .results-card { padding: 2px 3px; }
+            .results-card h2 { margin-bottom: 2px; }
+        }
         .results-section-title {
             font-size: 0.72rem;
             text-transform: uppercase;
@@ -144,6 +152,19 @@
             font-weight: 600;
         }
         .results-section-title:first-child { margin-top: 0; }
+        @media (max-width: 500px) {
+            .results-section-title {
+                font-size: 0.60rem;
+                margin: 2px 0 1px 0;
+                letter-spacing: 0.3px;
+            }
+        }
+        @media (max-width: 400px) {
+            .results-section-title {
+                font-size: 0.55rem;
+                margin: 1px 0 0px 0;
+            }
+        }
         .results-line { display: flex; flex-wrap: wrap; gap: 6px 28px; }
         .result-item {
             display: flex;
@@ -291,43 +312,76 @@
             #plot-3d-potential, #plot-3d-potential2 { height: 300px; }
         }
         @media (max-width: 500px) {
-            body { font-size: 14px; }
-            .shared-inputs-grid { grid-template-columns: 1fr; }
-            header { padding: 10px 12px; }
-            header h1 { font-size: 1.05rem; }
-            header p { font-size: 0.7rem; display: none; }
-            .tab-bar { padding: 0 8px; }
-            .tab-btn { padding: 6px 12px; font-size: 0.75rem; }
-            .container { padding: 8px; gap: 8px; }
-            .card { padding: 10px; }
-            .field { margin-bottom: 8px; }
-            .field label { font-size: 0.75rem; margin-bottom: 2px; }
-            .field input, .field select { font-size: 0.80rem; padding: 5px 6px; }
-            .card h2 { font-size: 0.75rem; margin-bottom: 8px; padding-bottom: 4px; }
-            .psd-plots-grid { grid-template-columns: 1fr; }
-            .psd-plot-card { min-height: 200px; }
-            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 200px; }
-            #plot-psd, #plot-psd2, #plot-psd3 { height: 200px; }
-            #plot-beam-profile, #plot-beam-profile2 { height: 140px; }
-            .plot-card { min-height: 240px; }
-            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 200px; }
-            #plot-3d-potential, #plot-3d-potential2 { height: 250px; }
-            .eq-box { padding: 4px 8px; font-size: 0.70rem; margin-bottom: 4px; }
-            .section-header { padding: 6px 12px; font-size: 0.88rem; margin-top: 2px; }
-            .result-item { font-size: 0.75rem; }
+            body { font-size: 13px; }
+            .shared-inputs-grid { grid-template-columns: 1fr; gap: 4px; }
+            header { padding: 6px 8px; }
+            header h1 { font-size: 0.90rem; }
+            header p { font-size: 0.60rem; display: none; }
+            .tab-bar { padding: 0 4px; gap: 0; }
+            .tab-btn { padding: 4px 8px; font-size: 0.68rem; }
+            .container { padding: 4px; gap: 4px; }
+            .card { padding: 6px; margin: 0; }
+            .optics-row { gap: 6px; margin-bottom: 2px; }
+            .optics-info { gap: 2px 8px; margin-top: 4px; padding-top: 4px; }
+            .field { margin-bottom: 4px; gap: 2px; }
+            .field label { font-size: 0.68rem; margin-bottom: 0px; }
+            .field input, .field select { font-size: 0.72rem; padding: 2px 3px; height: 24px; }
+            .card h2 { font-size: 0.68rem; margin: 0 0 4px 0; padding-bottom: 1px; }
+            .plots-grid { gap: 4px; margin-bottom: 0; }
+            .psd-plots-grid { grid-template-columns: 1fr; gap: 4px; margin-bottom: 0; }
+            .psd-plot-card { min-height: 120px; padding: 3px; margin: 0; }
+            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 120px; }
+            #plot-psd, #plot-psd2, #plot-psd3 { height: 120px; }
+            #plot-beam-profile, #plot-beam-profile2 { height: 90px; }
+            .plot-card { min-height: 130px; padding: 3px; gap: 4px; margin: 0; }
+            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 120px; }
+            #plot-3d-potential, #plot-3d-potential2 { height: 140px; }
+            .eq-box { padding: 1px 2px; font-size: 0.60rem; margin: 0 0 2px 0; line-height: 1.0; }
+            .section-header { padding: 2px 4px; font-size: 0.75rem; margin: 2px 0; }
+            .result-item { font-size: 0.68rem; line-height: 1.2; margin: 0; }
+            .psd-results-row { gap: 2px 8px; padding: 2px 4px; margin: 0; }
+            .results-card { margin-bottom: 2px; }
+            ul { margin: 0; padding-left: 16px; }
+            li { margin: 0; }
         }
         @media (max-width: 400px) {
-            .shared-inputs-grid { grid-template-columns: 1fr; }
-            header h1 { font-size: 0.95rem; }
-            .tab-btn { padding: 5px 10px; font-size: 0.70rem; }
-            .container { padding: 6px; gap: 6px; }
-            .psd-plot-card { min-height: 180px; }
-            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 180px; }
-            #plot-psd, #plot-psd2, #plot-psd3 { height: 180px; }
-            #plot-beam-profile, #plot-beam-profile2 { height: 120px; }
-            .plot-card { min-height: 220px; }
-            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 180px; }
-            #plot-3d-potential, #plot-3d-potential2 { height: 220px; }
+            * { margin: 0 !important; padding: 0 !important; }
+            body { font-size: 11px; }
+            header { padding: 4px 4px; }
+            header h1 { font-size: 0.75rem; line-height: 1.0; }
+            header p { display: none; }
+            .tab-bar { padding: 0 0; gap: 0; }
+            .tab-btn { padding: 2px 4px; font-size: 0.60rem; margin: 0; }
+            .container { padding: 2px; gap: 2px; }
+            .card { padding: 3px; }
+            .shared-inputs-grid { gap: 3px; }
+            .optics-row { gap: 4px; }
+            .optics-info { gap: 1px 6px; margin-top: 2px; padding-top: 2px; }
+            .field { margin-bottom: 2px; }
+            .field label { font-size: 0.60rem; }
+            .field input, .field select { font-size: 0.65rem; padding: 1px 2px; height: 20px; }
+            .card h2 { font-size: 0.60rem; margin-bottom: 2px; padding-bottom: 0px; }
+            .plots-grid { gap: 2px; }
+            .psd-plots-grid { gap: 2px; }
+            .psd-plot-card { min-height: 90px; padding: 1px; }
+            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 90px; }
+            #plot-psd, #plot-psd2, #plot-psd3 { height: 90px; }
+            #plot-beam-profile, #plot-beam-profile2 { height: 70px; }
+            .plot-card { min-height: 100px; padding: 1px; }
+            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 90px; }
+            #plot-3d-potential, #plot-3d-potential2 { height: 100px; }
+            .eq-box { padding: 0px 1px; font-size: 0.55rem; margin-bottom: 1px; line-height: 1.0; }
+            .section-header { padding: 1px 2px; font-size: 0.65rem; margin: 1px 0; }
+            .result-item { font-size: 0.60rem; line-height: 1.1; }
+            .psd-results-row { gap: 1px 6px; padding: 1px 2px; }
+            .results-card { margin-bottom: 0; }
+            ul { padding-left: 12px; }
+            li { margin: 0; }
+        }
+        
+        /* Fix bottom card on mobile */
+        @media (max-width: 600px) {
+            .card[style*="margin: 16px auto"] { margin: 4px auto !important; }
         }
     </style>
     <script>
@@ -680,8 +734,19 @@ function switchTab(id) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     event.currentTarget.classList.add('active');
-    // Resize plots after a short delay
-    setTimeout(resizeAll, 80);
+    
+    // Resize plots and force Plotly to relayout with multiple attempts
+    for (let delay of [50, 150, 300]) {
+        setTimeout(() => {
+            resizeAll();
+            // Force Plotly to redraw
+            document.querySelectorAll('[id^="plot-"]').forEach(plotDiv => {
+                if (plotDiv._fullLayout) {
+                    try { Plotly.Plots.relayout(plotDiv, {}); } catch(e) {}
+                }
+            });
+        }, delay);
+    }
 }
 
 // =========================================================================
