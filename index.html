@@ -177,13 +177,13 @@
         .plot-card {
             background: var(--card); border: 1px solid var(--border);
             border-radius: 10px; padding: 12px 8px 8px 8px;
-            min-height: 340px; overflow: hidden;
+            min-height: 340px; overflow: auto;
         }
         .plot-card.axial     { grid-area: axial; }
         .plot-card.radial    { grid-area: radial; }
         .plot-card.wide      { grid-area: potential; min-height: 450px; }
-        #plot-axial-force, #plot-radial-force { height: 280px; }
-        #plot-3d-potential  { height: 390px; }
+        #plot-axial-force, #plot-radial-force { height: 280px; width: 100%; }
+        #plot-3d-potential  { height: 390px; width: 100%; }
 
         /* ── PSD section plots ── */
         .psd-plots-grid {
@@ -194,10 +194,19 @@
         .psd-plot-card {
             background: var(--card); border: 1px solid var(--border);
             border-radius: 10px; padding: 12px 8px 8px 8px;
-            min-height: 380px; overflow: hidden;
+            min-height: 380px; overflow: auto;
         }
-        #plot-trap-freq { height: 340px; }
-        #plot-psd       { height: 340px; }
+        #plot-trap-freq { height: 340px; width: 100%; }
+        #plot-psd       { height: 340px; width: 100%; }
+        #plot-trap-freq2, #plot-trap-freq3 { height: 340px; width: 100%; }
+        #plot-psd2, #plot-psd3 { height: 340px; width: 100%; }
+
+        /* ── Optics plots ── */
+        #plot-beam-profile, #plot-beam-profile2 { height: 220px; width: 100%; }
+
+        /* ── Alternate dipole plots ── */
+        #plot-axial-force2, #plot-radial-force2 { height: 280px; width: 100%; }
+        #plot-3d-potential2 { height: 390px; width: 100%; }
 
         /* ── PSD results box ── */
         .psd-results-row {
@@ -255,10 +264,97 @@
             .psd-plots-grid { grid-template-columns: 1fr; }
             .optics-row { grid-template-columns: 1fr; }
         }
+        @media (max-width: 900px) {
+            header { padding: 12px 16px; }
+            header h1 { font-size: 1.2rem; }
+            header p { font-size: 0.75rem; }
+            .tab-btn { padding: 8px 16px; font-size: 0.85rem; }
+            .container { padding: 12px; gap: 10px; }
+            .card { padding: 12px; }
+            .psd-plot-card { min-height: 280px; }
+            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 280px; }
+            #plot-psd, #plot-psd2, #plot-psd3 { height: 280px; }
+            #plot-beam-profile, #plot-beam-profile2 { height: 180px; }
+            #plot-3d-potential2 { height: 320px; }
+        }
         @media (max-width: 700px) {
+            .shared-inputs-grid { grid-template-columns: 1fr 1fr; }
+            .field label { font-size: 0.78rem; }
+            .field input, .field select { font-size: 0.85rem; padding: 6px 8px; }
+            .psd-plots-grid { grid-template-columns: 1fr; }
+            .psd-plot-card { min-height: 240px; }
+            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 240px; }
+            #plot-psd, #plot-psd2, #plot-psd3 { height: 240px; }
+            #plot-beam-profile, #plot-beam-profile2 { height: 160px; }
+            .plot-card { min-height: 280px; }
+            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 240px; }
+            #plot-3d-potential, #plot-3d-potential2 { height: 300px; }
+        }
+        @media (max-width: 500px) {
+            body { font-size: 14px; }
             .shared-inputs-grid { grid-template-columns: 1fr; }
+            header { padding: 10px 12px; }
+            header h1 { font-size: 1.05rem; }
+            header p { font-size: 0.7rem; display: none; }
+            .tab-bar { padding: 0 8px; }
+            .tab-btn { padding: 6px 12px; font-size: 0.75rem; }
+            .container { padding: 8px; gap: 8px; }
+            .card { padding: 10px; }
+            .field { margin-bottom: 8px; }
+            .field label { font-size: 0.75rem; margin-bottom: 2px; }
+            .field input, .field select { font-size: 0.80rem; padding: 5px 6px; }
+            .card h2 { font-size: 0.75rem; margin-bottom: 8px; padding-bottom: 4px; }
+            .psd-plots-grid { grid-template-columns: 1fr; }
+            .psd-plot-card { min-height: 200px; }
+            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 200px; }
+            #plot-psd, #plot-psd2, #plot-psd3 { height: 200px; }
+            #plot-beam-profile, #plot-beam-profile2 { height: 140px; }
+            .plot-card { min-height: 240px; }
+            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 200px; }
+            #plot-3d-potential, #plot-3d-potential2 { height: 250px; }
+            .eq-box { padding: 4px 8px; font-size: 0.70rem; margin-bottom: 4px; }
+            .section-header { padding: 6px 12px; font-size: 0.88rem; margin-top: 2px; }
+            .result-item { font-size: 0.75rem; }
+        }
+        @media (max-width: 400px) {
+            .shared-inputs-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 0.95rem; }
+            .tab-btn { padding: 5px 10px; font-size: 0.70rem; }
+            .container { padding: 6px; gap: 6px; }
+            .psd-plot-card { min-height: 180px; }
+            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 180px; }
+            #plot-psd, #plot-psd2, #plot-psd3 { height: 180px; }
+            #plot-beam-profile, #plot-beam-profile2 { height: 120px; }
+            .plot-card { min-height: 220px; }
+            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 180px; }
+            #plot-3d-potential, #plot-3d-potential2 { height: 220px; }
         }
     </style>
+    <script>
+        // Device detection — adds 'mobile' class to body if on smartphone/tablet
+        function detectDevice() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+            const isSmallScreen = window.innerWidth < 768;
+            if (isMobile || isSmallScreen) {
+                document.documentElement.setAttribute('data-device', 'mobile');
+            } else {
+                document.documentElement.setAttribute('data-device', 'desktop');
+            }
+        }
+        detectDevice();
+        window.addEventListener('resize', () => {
+            detectDevice();
+            // Force Plotly relayout on resize for mobile rendering
+            setTimeout(() => {
+                document.querySelectorAll('[id^="plot-"]').forEach(plotDiv => {
+                    if (plotDiv._fullLayout) {
+                        try { Plotly.Plots.resize(plotDiv); } catch(e) {}
+                    }
+                });
+            }, 50);
+        });
+    </script>
 </head>
 <body>
 
@@ -400,7 +496,7 @@
             </div>
             <div class="card" id="beam-profile-card">
                 <h2>Beam Profile at Lens</h2>
-                <div id="plot-beam-profile" style="height:220px;"></div>
+                <div id="plot-beam-profile"></div>
             </div>
         </div>
 
@@ -468,7 +564,7 @@
             </div>
             <div class="card">
                 <h2>Beam Profile at Lens</h2>
-                <div id="plot-beam-profile2" style="height:220px;"></div>
+                <div id="plot-beam-profile2"></div>
             </div>
         </div>
         <div class="card results-card">
@@ -479,7 +575,7 @@
         <div class="plots-grid">
             <div class="plot-card axial"><div id="plot-axial-force2"></div></div>
             <div class="plot-card radial"><div id="plot-radial-force2"></div></div>
-            <div class="plot-card wide"><div id="plot-3d-potential2" style="height:390px;"></div></div>
+            <div class="plot-card wide"><div id="plot-3d-potential2"></div></div>
         </div>
     </div>
 </div>
@@ -493,8 +589,8 @@
             <div id="psd-results-grid3"></div>
         </div>
         <div class="psd-plots-grid">
-            <div class="psd-plot-card"><div id="plot-trap-freq3" style="height:340px;"></div></div>
-            <div class="psd-plot-card"><div id="plot-psd3"       style="height:340px;"></div></div>
+            <div class="psd-plot-card"><div id="plot-trap-freq3"></div></div>
+            <div class="psd-plot-card"><div id="plot-psd3"></div></div>
         </div>
     </div>
 </div>
@@ -1014,9 +1110,11 @@ const baseLayout = {
     yaxis: { gridcolor:'#e8ecf0', zerolinecolor:'#c0c8d0', exponentformat:'e' },
     legend: { x:0.02,y:0.98, bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#ddd', borderwidth:1, font:{size:10} },
     autosize: true,
+    hovermode: 'closest',  // Better hover on touch
 };
-const plotCfg    = { responsive:true, displayModeBar:false };
-const plotCfg3d  = { responsive:true, displayModeBar:true, modeBarButtonsToRemove:['toImage'] };
+const isMobileDevice = document.documentElement.getAttribute('data-device') === 'mobile';
+const plotCfg    = { responsive:true, displayModeBar:false, hoverClosestDistance: isMobileDevice ? 100 : 20 };
+const plotCfg3d  = { responsive:true, displayModeBar:isMobileDevice?false:true, modeBarButtonsToRemove:['toImage','lasso2d','select2d'] };
 
 // Track init state
 const inited = {};
@@ -1235,6 +1333,21 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     tryInit();
+});
+
+// Ensure plots render properly after page fully loads
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        resizeAll();
+        // Force re-render on mobile to ensure visibility
+        if (document.documentElement.getAttribute('data-device') === 'mobile') {
+            document.querySelectorAll('[id^="plot-"]').forEach(plotDiv => {
+                if (plotDiv._fullLayout) {
+                    try { Plotly.Plots.relayout(plotDiv, {}); } catch(e) {}
+                }
+            });
+        }
+    }, 200);
 });
 window.addEventListener('resize', resizeAll);
 </script>
