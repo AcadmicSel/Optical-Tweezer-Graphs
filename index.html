@@ -65,7 +65,7 @@
         }
         .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.9); }
 
-        .tab-panel { display: none; min-height: auto; }
+        .tab-panel { display: none; }
         .tab-panel.active { display: block; }
 
         /* ── Layout ── */
@@ -135,14 +135,6 @@
         /* ── Results ── */
         .results-card { padding: 14px 18px; }
         .results-card h2 { margin-bottom: 8px; }
-        @media (max-width: 700px) {
-            .results-card { padding: 6px 8px; }
-            .results-card h2 { margin-bottom: 4px; }
-        }
-        @media (max-width: 400px) {
-            .results-card { padding: 2px 3px; }
-            .results-card h2 { margin-bottom: 2px; }
-        }
         .results-section-title {
             font-size: 0.72rem;
             text-transform: uppercase;
@@ -152,19 +144,6 @@
             font-weight: 600;
         }
         .results-section-title:first-child { margin-top: 0; }
-        @media (max-width: 500px) {
-            .results-section-title {
-                font-size: 0.60rem;
-                margin: 2px 0 1px 0;
-                letter-spacing: 0.3px;
-            }
-        }
-        @media (max-width: 400px) {
-            .results-section-title {
-                font-size: 0.55rem;
-                margin: 1px 0 0px 0;
-            }
-        }
         .results-line { display: flex; flex-wrap: wrap; gap: 6px 28px; }
         .result-item {
             display: flex;
@@ -198,13 +177,13 @@
         .plot-card {
             background: var(--card); border: 1px solid var(--border);
             border-radius: 10px; padding: 12px 8px 8px 8px;
-            min-height: 340px; overflow: auto;
+            min-height: 340px; overflow: hidden;
         }
         .plot-card.axial     { grid-area: axial; }
         .plot-card.radial    { grid-area: radial; }
         .plot-card.wide      { grid-area: potential; min-height: 450px; }
-        #plot-axial-force, #plot-radial-force { height: 280px; width: 100%; }
-        #plot-3d-potential  { height: 390px; width: 100%; }
+        #plot-axial-force, #plot-radial-force { height: 280px; }
+        #plot-3d-potential  { height: 390px; }
 
         /* ── PSD section plots ── */
         .psd-plots-grid {
@@ -215,19 +194,10 @@
         .psd-plot-card {
             background: var(--card); border: 1px solid var(--border);
             border-radius: 10px; padding: 12px 8px 8px 8px;
-            min-height: 380px; overflow: auto;
+            min-height: 380px; overflow: hidden;
         }
-        #plot-trap-freq { height: 340px; width: 100%; }
-        #plot-psd       { height: 340px; width: 100%; }
-        #plot-trap-freq2, #plot-trap-freq3 { height: 340px; width: 100%; }
-        #plot-psd2, #plot-psd3 { height: 340px; width: 100%; }
-
-        /* ── Optics plots ── */
-        #plot-beam-profile, #plot-beam-profile2 { height: 220px; width: 100%; }
-
-        /* ── Alternate dipole plots ── */
-        #plot-axial-force2, #plot-radial-force2 { height: 280px; width: 100%; }
-        #plot-3d-potential2 { height: 390px; width: 100%; }
+        #plot-trap-freq { height: 340px; }
+        #plot-psd       { height: 340px; }
 
         /* ── PSD results box ── */
         .psd-results-row {
@@ -285,130 +255,10 @@
             .psd-plots-grid { grid-template-columns: 1fr; }
             .optics-row { grid-template-columns: 1fr; }
         }
-        @media (max-width: 900px) {
-            header { padding: 12px 16px; }
-            header h1 { font-size: 1.2rem; }
-            header p { font-size: 0.75rem; }
-            .tab-btn { padding: 8px 16px; font-size: 0.85rem; }
-            .container { padding: 12px; gap: 10px; }
-            .card { padding: 12px; }
-            .psd-plot-card { min-height: 280px; }
-            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 280px; }
-            #plot-psd, #plot-psd2, #plot-psd3 { height: 280px; }
-            #plot-beam-profile, #plot-beam-profile2 { height: 180px; }
-            #plot-3d-potential2 { height: 320px; }
-        }
         @media (max-width: 700px) {
-            .shared-inputs-grid { grid-template-columns: 1fr 1fr; }
-            .field label { font-size: 0.78rem; }
-            .field input, .field select { font-size: 0.85rem; padding: 6px 8px; }
-            .psd-plots-grid { grid-template-columns: 1fr; }
-            .psd-plot-card { min-height: 240px; }
-            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 240px; }
-            #plot-psd, #plot-psd2, #plot-psd3 { height: 240px; }
-            #plot-beam-profile, #plot-beam-profile2 { height: 160px; }
-            .plot-card { min-height: 280px; }
-            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 240px; }
-            #plot-3d-potential, #plot-3d-potential2 { height: 300px; }
-        }
-        @media (max-width: 500px) {
-            body { font-size: 13px; }
-            .shared-inputs-grid { grid-template-columns: 1fr; gap: 4px; }
-            header { padding: 6px 8px; }
-            header h1 { font-size: 0.90rem; }
-            header p { font-size: 0.60rem; display: none; }
-            .tab-bar { padding: 0 4px; gap: 0; }
-            .tab-btn { padding: 4px 8px; font-size: 0.68rem; }
-            .container { padding: 4px; gap: 4px; }
-            .card { padding: 6px; margin: 0; }
-            .optics-row { gap: 6px; margin-bottom: 2px; }
-            .optics-info { gap: 2px 8px; margin-top: 4px; padding-top: 4px; }
-            .field { margin-bottom: 4px; gap: 2px; }
-            .field label { font-size: 0.68rem; margin-bottom: 0px; }
-            .field input, .field select { font-size: 0.72rem; padding: 2px 3px; height: 24px; }
-            .card h2 { font-size: 0.68rem; margin: 0 0 4px 0; padding-bottom: 1px; }
-            .plots-grid { gap: 4px; margin-bottom: 0; }
-            .psd-plots-grid { grid-template-columns: 1fr; gap: 4px; margin-bottom: 0; }
-            .psd-plot-card { min-height: 120px; padding: 3px; margin: 0; }
-            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 120px; }
-            #plot-psd, #plot-psd2, #plot-psd3 { height: 120px; }
-            #plot-beam-profile, #plot-beam-profile2 { height: 90px; }
-            .plot-card { min-height: 130px; padding: 3px; gap: 4px; margin: 0; }
-            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 120px; }
-            #plot-3d-potential, #plot-3d-potential2 { height: 140px; }
-            .eq-box { padding: 1px 2px; font-size: 0.60rem; margin: 0 0 2px 0; line-height: 1.0; }
-            .section-header { padding: 2px 4px; font-size: 0.75rem; margin: 2px 0; }
-            .result-item { font-size: 0.68rem; line-height: 1.2; margin: 0; }
-            .psd-results-row { gap: 2px 8px; padding: 2px 4px; margin: 0; }
-            .results-card { margin-bottom: 2px; }
-            ul { margin: 0; padding-left: 16px; }
-            li { margin: 0; }
-        }
-        @media (max-width: 400px) {
-            * { margin: 0 !important; padding: 0 !important; }
-            body { font-size: 11px; }
-            header { padding: 4px 4px; }
-            header h1 { font-size: 0.75rem; line-height: 1.0; }
-            header p { display: none; }
-            .tab-bar { padding: 0 0; gap: 0; }
-            .tab-btn { padding: 2px 4px; font-size: 0.60rem; margin: 0; }
-            .container { padding: 2px; gap: 2px; }
-            .card { padding: 3px; }
-            .shared-inputs-grid { gap: 3px; }
-            .optics-row { gap: 4px; }
-            .optics-info { gap: 1px 6px; margin-top: 2px; padding-top: 2px; }
-            .field { margin-bottom: 2px; }
-            .field label { font-size: 0.60rem; }
-            .field input, .field select { font-size: 0.65rem; padding: 1px 2px; height: 20px; }
-            .card h2 { font-size: 0.60rem; margin-bottom: 2px; padding-bottom: 0px; }
-            .plots-grid { gap: 2px; }
-            .psd-plots-grid { gap: 2px; }
-            .psd-plot-card { min-height: 90px; padding: 1px; }
-            #plot-trap-freq, #plot-trap-freq2, #plot-trap-freq3 { height: 90px; }
-            #plot-psd, #plot-psd2, #plot-psd3 { height: 90px; }
-            #plot-beam-profile, #plot-beam-profile2 { height: 70px; }
-            .plot-card { min-height: 100px; padding: 1px; }
-            #plot-axial-force, #plot-radial-force, #plot-axial-force2, #plot-radial-force2 { height: 90px; }
-            #plot-3d-potential, #plot-3d-potential2 { height: 100px; }
-            .eq-box { padding: 0px 1px; font-size: 0.55rem; margin-bottom: 1px; line-height: 1.0; }
-            .section-header { padding: 1px 2px; font-size: 0.65rem; margin: 1px 0; }
-            .result-item { font-size: 0.60rem; line-height: 1.1; }
-            .psd-results-row { gap: 1px 6px; padding: 1px 2px; }
-            .results-card { margin-bottom: 0; }
-            ul { padding-left: 12px; }
-            li { margin: 0; }
-        }
-        
-        /* Fix bottom card on mobile */
-        @media (max-width: 600px) {
-            .card[style*="margin: 16px auto"] { margin: 4px auto !important; }
+            .shared-inputs-grid { grid-template-columns: 1fr; }
         }
     </style>
-    <script>
-        // Device detection — adds 'mobile' class to body if on smartphone/tablet
-        function detectDevice() {
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-            const isSmallScreen = window.innerWidth < 768;
-            if (isMobile || isSmallScreen) {
-                document.documentElement.setAttribute('data-device', 'mobile');
-            } else {
-                document.documentElement.setAttribute('data-device', 'desktop');
-            }
-        }
-        detectDevice();
-        window.addEventListener('resize', () => {
-            detectDevice();
-            // Force Plotly relayout on resize for mobile rendering
-            setTimeout(() => {
-                document.querySelectorAll('[id^="plot-"]').forEach(plotDiv => {
-                    if (plotDiv._fullLayout) {
-                        try { Plotly.Plots.resize(plotDiv); } catch(e) {}
-                    }
-                });
-            }, 50);
-        });
-    </script>
 </head>
 <body>
 
@@ -550,7 +400,7 @@
             </div>
             <div class="card" id="beam-profile-card">
                 <h2>Beam Profile at Lens</h2>
-                <div id="plot-beam-profile"></div>
+                <div id="plot-beam-profile" style="height:220px;"></div>
             </div>
         </div>
 
@@ -618,7 +468,7 @@
             </div>
             <div class="card">
                 <h2>Beam Profile at Lens</h2>
-                <div id="plot-beam-profile2"></div>
+                <div id="plot-beam-profile2" style="height:220px;"></div>
             </div>
         </div>
         <div class="card results-card">
@@ -629,7 +479,7 @@
         <div class="plots-grid">
             <div class="plot-card axial"><div id="plot-axial-force2"></div></div>
             <div class="plot-card radial"><div id="plot-radial-force2"></div></div>
-            <div class="plot-card wide"><div id="plot-3d-potential2"></div></div>
+            <div class="plot-card wide"><div id="plot-3d-potential2" style="height:390px;"></div></div>
         </div>
     </div>
 </div>
@@ -643,8 +493,8 @@
             <div id="psd-results-grid3"></div>
         </div>
         <div class="psd-plots-grid">
-            <div class="psd-plot-card"><div id="plot-trap-freq3"></div></div>
-            <div class="psd-plot-card"><div id="plot-psd3"></div></div>
+            <div class="psd-plot-card"><div id="plot-trap-freq3" style="height:340px;"></div></div>
+            <div class="psd-plot-card"><div id="plot-psd3"       style="height:340px;"></div></div>
         </div>
     </div>
 </div>
@@ -734,19 +584,8 @@ function switchTab(id) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     event.currentTarget.classList.add('active');
-    
-    // Resize plots and force Plotly to relayout with multiple attempts
-    for (let delay of [50, 150, 300]) {
-        setTimeout(() => {
-            resizeAll();
-            // Force Plotly to redraw
-            document.querySelectorAll('[id^="plot-"]').forEach(plotDiv => {
-                if (plotDiv._fullLayout) {
-                    try { Plotly.Plots.relayout(plotDiv, {}); } catch(e) {}
-                }
-            });
-        }, delay);
-    }
+    // Resize plots after a short delay
+    setTimeout(resizeAll, 80);
 }
 
 // =========================================================================
@@ -1175,11 +1014,9 @@ const baseLayout = {
     yaxis: { gridcolor:'#e8ecf0', zerolinecolor:'#c0c8d0', exponentformat:'e' },
     legend: { x:0.02,y:0.98, bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#ddd', borderwidth:1, font:{size:10} },
     autosize: true,
-    hovermode: 'closest',  // Better hover on touch
 };
-const isMobileDevice = document.documentElement.getAttribute('data-device') === 'mobile';
-const plotCfg    = { responsive:true, displayModeBar:false, hoverClosestDistance: isMobileDevice ? 100 : 20 };
-const plotCfg3d  = { responsive:true, displayModeBar:isMobileDevice?false:true, modeBarButtonsToRemove:['toImage','lasso2d','select2d'] };
+const plotCfg    = { responsive:true, displayModeBar:false };
+const plotCfg3d  = { responsive:true, displayModeBar:true, modeBarButtonsToRemove:['toImage'] };
 
 // Track init state
 const inited = {};
@@ -1398,21 +1235,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     tryInit();
-});
-
-// Ensure plots render properly after page fully loads
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        resizeAll();
-        // Force re-render on mobile to ensure visibility
-        if (document.documentElement.getAttribute('data-device') === 'mobile') {
-            document.querySelectorAll('[id^="plot-"]').forEach(plotDiv => {
-                if (plotDiv._fullLayout) {
-                    try { Plotly.Plots.relayout(plotDiv, {}); } catch(e) {}
-                }
-            });
-        }
-    }, 200);
 });
 window.addEventListener('resize', resizeAll);
 </script>
